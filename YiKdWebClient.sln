@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34511.98
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YiKdWebClient", "YiKdWebClient\YiKdWebClient.csproj", "{0C4365E2-FE32-4C75-BD7B-84DDEF8D1B7A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleTestNet80", "ConsoleTestNet80\ConsoleTestNet80.csproj", "{ACA7F4F6-AB4A-4DA9-BCA9-8821DE73ED66}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{9FA3D6BD-1EC1-3BA5-80CB-CE02773A58D5}"
+	ProjectSection(SolutionItems) = preProject
+		note.txt = note.txt
+		README.md = README.md
+		星空WebAPI.postman_collection.json.zip = 星空WebAPI.postman_collection.json.zip
+		金蝶云星空WebAPI接口说明书_V6.0.docx = 金蝶云星空WebAPI接口说明书_V6.0.docx
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlobalServiceCustom.WebApi", "GlobalServiceCustom.WebApi\GlobalServiceCustom.WebApi.csproj", "{E4C7900B-9995-4583-A99A-ECD4059A8F53}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C4365E2-FE32-4C75-BD7B-84DDEF8D1B7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C4365E2-FE32-4C75-BD7B-84DDEF8D1B7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C4365E2-FE32-4C75-BD7B-84DDEF8D1B7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C4365E2-FE32-4C75-BD7B-84DDEF8D1B7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACA7F4F6-AB4A-4DA9-BCA9-8821DE73ED66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACA7F4F6-AB4A-4DA9-BCA9-8821DE73ED66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACA7F4F6-AB4A-4DA9-BCA9-8821DE73ED66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACA7F4F6-AB4A-4DA9-BCA9-8821DE73ED66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4C7900B-9995-4583-A99A-ECD4059A8F53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4C7900B-9995-4583-A99A-ECD4059A8F53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4C7900B-9995-4583-A99A-ECD4059A8F53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4C7900B-9995-4583-A99A-ECD4059A8F53}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {52027121-85E3-4F57-8BFB-02AF80C565BD}
+	EndGlobalSection
+EndGlobal

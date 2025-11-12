@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+
+  <appSettings>
+
+    <!-- 当前使用的 账套ID(即数据中心id) -->
+
+    <!-- 第三方系统登录授权的账套ID（即open.kingdee.com网站的第三方系统登录授权中的数据中心标识）-->
+
+    <!-- 在第三方系统登录授权页面点击“生成测试链接”按钮后即可查看   -->
+
+    <add key="X-KDApi-AcctID" value="629bd5285d655d"/>
+
+    <!-- 第三方系统登录授权的 集成用户名称  -->
+
+    <!-- 补丁版本为PT-146894 [7.7.0.202111]及后续的版本，则为指定用户登录列表中任一用户  -->
+
+    <!-- 若第三方系统登录授权已勾选“允许全部用户登录”，则无以上限制  -->
+
+    <add key="X-KDApi-UserName" value="Administrator"/>
+
+    <!-- 第三方系统登录授权的 应用ID  -->
+
+    <add key="X-KDApi-AppID" value="269091_265DQZgP5oGVS/TtQ+1tzcWr3I6U1qrP"/>
+
+    <!-- 第三方系统登录授权的 应用密钥  -->
+
+    <add key="X-KDApi-AppSec" value="a7dd6d183d954b1788162401179d0757"/>
+
+    <!-- 账套语系，默认2052  -->
+
+    <add key="X-KDApi-LCID" value="2052"/>
+
+    <!-- 组织编码，启用多组织时配置对应的组织编码才有效  -->
+
+    <!--<add key="X-KDApi-OrgNum" value="*****"/>-->
+
+    <!-- 服务Url地址(私有云必须配置金蝶云星空产品地址，K3Cloud/结尾。若为需要走公有云网关模式,则必须置空)-->
+
+    <add key="X-KDApi-ServerUrl" value="http://127.0.0.1/K3Cloud/"/>
+  </appSettings>
+
+</configuration>
+
+

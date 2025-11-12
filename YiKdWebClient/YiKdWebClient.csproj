@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--<TargetFramework>net8.0</TargetFramework>-->
+    <TargetFrameworks Condition="'$(LibraryFrameworks)'==''">net10.0;net9.0;net8.0;net7.0;net6.0;net5.0;net481;net48;net472;net471;net47;net462;netstandard2.1;netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks Condition="'$(LibraryFrameworks)'!=''">$(LibraryFrameworks)</TargetFrameworks>
+    <!--抑制版本兼容警告-->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <Title>YiKdWebClient</Title>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>zoujiawei</Authors>
+    <AssemblyVersion>1.0.0.25</AssemblyVersion>
+    <FileVersion>1.0.0.25</FileVersion>
+    <VersionPrefix>1.0.0.25</VersionPrefix>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://gitee.com/lnsyzjw/yi-kd-web-client</PackageProjectUrl>
+    <Description>
+      用于与金蝶云星空集成,取消对SDK和Newtonsoft.Json依赖,WEBAPI支持(1.第三方授权认证,2.API签名认证,3.集成密钥文件认证,4.旧版用户名密码认证);
+      单点登录(支持V1-V4版本)
+      项目地址1:https://gitee.com/lnsyzjw/yi-kd-web-client
+      项目地址2:https://github.com/1609676823/YiKdWebClient
+    </Description>
+    <Copyright>Copyright © zjw 2024</Copyright>
+
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+   
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
+    <PackageReference Include="System.Text.Json" Version="10.0.0" />
+
+  </ItemGroup>
+
+  <!-- 如果当前框架是Framework，则引用System.Web -->
+  <ItemGroup>
+    
+    <Reference Include="System.Web" Condition="'$(TargetFramework)' == 'net481'" />
+    <Reference Include="System.Web" Condition="'$(TargetFramework)' == 'net48'" />
+    <Reference Include="System.Web" Condition="'$(TargetFramework)' == 'net472'" />
+    <Reference Include="System.Web" Condition="'$(TargetFramework)' == 'net471'" />
+    <Reference Include="System.Web" Condition="'$(TargetFramework)' == 'net47'" />
+    <Reference Include="System.Web" Condition="'$(TargetFramework)' == 'net462'" />
+   
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Update="YiKdWebCfg\appsettings.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    
+    <None Include="readme.md" Pack="true" PackagePath="\">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+   
+  </ItemGroup>
+
+</Project>
