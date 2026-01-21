@@ -7,5 +7,6 @@
   </Folder>
   <Project Path="ConsoleTestNet80/ConsoleTestNet80.csproj" />
   <Project Path="GlobalServiceCustom.WebApi/GlobalServiceCustom.WebApi.csproj" Id="e4c7900b-9995-4583-a99a-ecd4059a8f53" />
+  <Project Path="YiKdWebClient.Tests/YiKdWebClient.Tests.csproj" Id="a7ce6bf4-ba85-4581-8acf-92dd736ddaf2" />
   <Project Path="YiKdWebClient/YiKdWebClient.csproj" />
 </Solution>
