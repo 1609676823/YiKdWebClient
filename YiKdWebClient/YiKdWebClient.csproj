@@ -11,9 +11,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Authors>zoujiawei</Authors>
-    <AssemblyVersion>1.0.0.28</AssemblyVersion>
-    <FileVersion>1.0.0.28</FileVersion>
-    <VersionPrefix>1.0.0.28</VersionPrefix>
+    <AssemblyVersion>1.0.0.29</AssemblyVersion>
+    <FileVersion>1.0.0.29</FileVersion>
+    <VersionPrefix>1.0.0.29</VersionPrefix>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://gitee.com/lnsyzjw/yi-kd-web-client</PackageProjectUrl>
     <Description>
@@ -32,13 +32,40 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
-    <PackageReference Include="System.Text.Json" Version="10.0.5" />
-
+    <!--<PackageReference Include="System.Net.Http" Version="4.3.4" />-->
+    <!--<PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />-->
+    <!--<PackageReference Include="System.Text.Json" Version="10.0.5" />-->
   </ItemGroup>
 
-  <!-- 如果当前框架是Framework，则引用System.Web -->
+	<!--<ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard'">
+		<PackageReference Include="System.Text.Json" Version="8.0.5" />
+	</ItemGroup>-->
+
+	<ItemGroup>
+		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net462'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net47'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net471'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net472'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net48'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net481'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net5.0'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'netstandard2.1'" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Net.Http" Version="4.3.4" Condition="'$(TargetFramework)' == 'net462'" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" Condition="'$(TargetFramework)' == 'net47'" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" Condition="'$(TargetFramework)' == 'net471'" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" Condition="'$(TargetFramework)' == 'net472'" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" Condition="'$(TargetFramework)' == 'net48'" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" Condition="'$(TargetFramework)' == 'net481'" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" Condition="'$(TargetFramework)' == 'net5.0'" />
+
+	</ItemGroup>
+
+
+	<!-- 如果当前框架是Framework，则引用System.Web，必须使用下面这种Reference，对程序集的引用，因为System.Web太古老没有nuget包 -->
   <ItemGroup>
     
     <Reference Include="System.Web" Condition="'$(TargetFramework)' == 'net481'" />
