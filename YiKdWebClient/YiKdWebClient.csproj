@@ -11,9 +11,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Authors>zoujiawei</Authors>
-    <AssemblyVersion>1.0.0.29</AssemblyVersion>
-    <FileVersion>1.0.0.29</FileVersion>
-    <VersionPrefix>1.0.0.29</VersionPrefix>
+    <AssemblyVersion>1.0.0.30</AssemblyVersion>
+    <FileVersion>1.0.0.30</FileVersion>
+    <VersionPrefix>1.0.0.30</VersionPrefix>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://gitee.com/lnsyzjw/yi-kd-web-client</PackageProjectUrl>
     <Description>
@@ -42,15 +42,15 @@
 	</ItemGroup>-->
 
 	<ItemGroup>
-		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net462'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net47'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net471'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net472'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net48'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net481'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'net5.0'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.5" Condition="'$(TargetFramework)' == 'netstandard2.1'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net462'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net47'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net471'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net472'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net48'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net481'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net5.0'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'netstandard2.1'" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -92,5 +92,9 @@
     </None>
    
   </ItemGroup>
+	<Target Name="BlockNewtonsoftJson" BeforeTargets="CollectPackageReferences">
+		<Error Condition="'%(PackageReference.Identity)' == 'Newtonsoft.Json'" Text="[架构规范拦截] 本项目已严格禁止安装 Newtonsoft.Json 包！请移除该包并使用官方推荐的 System.Text.Json。" />
+	</Target>
+
 
 </Project>
