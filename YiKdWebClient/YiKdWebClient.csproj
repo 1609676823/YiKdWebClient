@@ -11,9 +11,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Authors>zoujiawei</Authors>
-    <AssemblyVersion>1.0.0.30</AssemblyVersion>
-    <FileVersion>1.0.0.30</FileVersion>
-    <VersionPrefix>1.0.0.30</VersionPrefix>
+    <AssemblyVersion>1.0.0.31</AssemblyVersion>
+    <FileVersion>1.0.0.31</FileVersion>
+    <VersionPrefix>1.0.0.31</VersionPrefix>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://gitee.com/lnsyzjw/yi-kd-web-client</PackageProjectUrl>
     <Description>
@@ -42,15 +42,15 @@
 	</ItemGroup>-->
 
 	<ItemGroup>
-		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net462'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net47'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net471'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net472'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net48'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net481'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'net5.0'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-		<PackageReference Include="System.Text.Json" Version="10.0.7" Condition="'$(TargetFramework)' == 'netstandard2.1'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" Condition="'$(TargetFramework)' == 'net462'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" Condition="'$(TargetFramework)' == 'net47'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" Condition="'$(TargetFramework)' == 'net471'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" Condition="'$(TargetFramework)' == 'net472'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" Condition="'$(TargetFramework)' == 'net48'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" Condition="'$(TargetFramework)' == 'net481'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" Condition="'$(TargetFramework)' == 'net5.0'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" Condition="'$(TargetFramework)' == 'netstandard2.1'" />
 	</ItemGroup>
 
 	<ItemGroup>
