@@ -16,6 +16,11 @@
     <ProjectReference Include="..\YiKdWebClient\YiKdWebClient.csproj" />
  </ItemGroup>
 
+  <!-- ConsoleReport uses System.Text.Json directly; only .NET Framework needs the package. -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Text.Json" Version="10.0.10" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Update="YiKdWebCfg\API测试.cnf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
