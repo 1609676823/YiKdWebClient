@@ -1,0 +1,3 @@
+YiKdWebClient attachment upload example.
+This file is intentionally small so beginners can run the chunk-upload samples safely in a local test environment.
+Generated for the ConsoleTestNet80 documentation examples.

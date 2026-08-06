@@ -1,437 +1,785 @@
-# YiKdWebClient 框架介绍以及使用说明
-实现金蝶云星空第三方webapi操作,使用原生框架以及纯HTTP协议实现,避免了各种框架冲突<br>
-移除了对官方SDK的依赖<br>
-移除了对Newtonsoft.Json的依赖<br>
-兼容性强;同时兼容.net;.net framework;netstandard
-# 官方原始的报文和地址结构说明
-https://vip.kingdee.com/knowledge/528587883691785472?productLineId=1&isKnowledge=2&lang=zh-CN
+# YiKdWebClient
 
-# postman原始报文和url地址下载
-[点此下载](%E6%98%9F%E7%A9%BAWebAPI.postman_collection.json.zip)
-# 1.框架引入方式:
-## nuget包的使用方法
-使用vs自带的nuget管理器安装最新版的 YiKdWebClient ,如下图:<br>
-![输入图片说明](nuget%E4%BD%BF%E7%94%A8.png)
+YiKdWebClient 是一个用于调用 **金蝶云星空 WebAPI** 的轻量级 .NET 客户端。项目使用原生 HTTP 协议实现，移除了对金蝶官方 SDK 和 `Newtonsoft.Json` 的依赖，可用于 .NET、.NET Framework 与 .NET Standard 项目。
 
-## nuget发布地址(可以手动下载安装/引入):
-https://www.nuget.org/packages/YiKdWebClient
+项目主要提供：
 
-# 2.配置文件设置:
-## 配置文件路径
-配置的相对路径如下  YiKdWebCfg/appsettings.xml ，用于依赖于第三方登录授权验证和API签名验证，也可以自己实例化YiK3CloudClient中的AppSettingsModel类
+- 第三方系统登录授权、SHA256/SHA1 签名、集成密钥文件、旧版用户名密码等认证方式；
+- API 请求头签名模式；
+- 保存、审核、查询、下推、附件上传等常用 WebAPI 封装；
+- 单点登录 SSO V1～V4；
+- 自定义 WebAPI 调用；
+- 登录与业务请求的真实 URL、请求头、请求报文和返回报文，便于使用 Postman、ApiPost 等工具排查问题。
 
-## 配置文件内容(相对路径YiKdWebCfg/appsettings.xml 文件，如果没有就手动创建)
-注意：(最新公有云可能强制要求走网关(https://api.kingdee.com/galaxyapi/)<br>
-走网关的方式需要使用API签名认证的模式。<br>
-最新询问总部（2024年10月)，目前不再强制公有云使用网关模式，公有云可以正常调用api，后续实际情况根据官方为准。框架功能里面已经全部包含，均可使用
+> [!WARNING]
+> 仓库中的 `appsettings.xml` 和运行截图使用的是作者本机测试环境信息，仅用于演示。接入自己的环境时，必须替换数据中心 ID、集成用户、应用 ID、应用密钥、服务地址和集成密钥文件。请勿把生产密钥、生产密码或长期有效的会话信息提交到公开仓库。
 
+> [!IMPORTANT]
+> 旧版 `demo` 用户密码没有写入源码、README 或截图。`validate-login` 示例只从 `YIKD_VALIDATE_PASSWORD` 环境变量读取密码，控制台展示真实请求结构时会把密码替换为 `******`。
+
+## 目录
+
+- [1. 相关资料](#1-相关资料)
+- [2. 安装](#2-安装)
+- [3. 配置 appsettings.xml](#3-配置-appsettingsxml)
+- [4. 五分钟运行第一个示例](#4-五分钟运行第一个示例)
+- [5. ConsoleTestNet80 示例运行器](#5-consoletestnet80-示例运行器)
+- [6. 认证与请求示例](#6-认证与请求示例)
+- [7. JSON 参数与接口功能列表](#7-json-参数与接口功能列表)
+- [8. 单点登录](#8-单点登录)
+- [9. 自定义 WebAPI](#9-自定义-webapi)
+- [10. 文件上传](#10-文件上传)
+- [11. 框架兼容性与依赖](#11-框架兼容性与依赖)
+- [12. 常见问题](#12-常见问题)
+- [13. 重新生成 README 截图](#13-重新生成-readme-截图)
+- [14. 项目地址](#14-项目地址)
+
+## 1. 相关资料
+
+- 金蝶云星空官方原始报文与地址结构说明：<https://vip.kingdee.com/knowledge/528587883691785472?productLineId=1&isKnowledge=2&lang=zh-CN>
+- 官方 WebAPI 接口说明：<https://vip.kingdee.com/knowledge/407944297590364160?productLineId=1&isKnowledge=2&lang=zh-CN>
+- 仓库内 WebAPI 接口说明书：[金蝶云星空 WebAPI 接口说明书 V6.0](./金蝶云星空WebAPI接口说明书_V6.0.docx)
+- 仓库内 Postman 集合：[星空 WebAPI Postman Collection](./星空WebAPI.postman_collection.json.zip)
+- NuGet：<https://www.nuget.org/packages/YiKdWebClient>
+
+金蝶官方文档中的 JSON 是调用参数格式，不一定等于最终发送到 HTTP 接口的外层报文。YiKdWebClient 会把参数包装为金蝶 WebAPI 所需格式；最终报文可以通过客户端的 `ReturnLoginWebModel` 和 `ReturnOperationWebModel` 查看。
+
+## 2. 安装
+
+### 2.1 Visual Studio NuGet 管理器
+
+在解决方案资源管理器中右击项目，选择“管理 NuGet 程序包”，搜索并安装 `YiKdWebClient`。
+
+![Visual Studio 中安装 YiKdWebClient](docs/screenshots/00-nuget-install.png)
+
+### 2.2 Package Manager Console
+
+```powershell
+Install-Package YiKdWebClient
 ```
+
+### 2.3 .NET CLI
+
+```powershell
+dotnet add package YiKdWebClient
+```
+
+如果直接引用本仓库源码，可参考 `ConsoleTestNet80/ConsoleTestNet80.csproj` 中的 `ProjectReference`。
+
+## 3. 配置 appsettings.xml
+
+### 3.1 默认路径
+
+默认配置文件相对运行目录的位置是：
+
+```text
+YiKdWebCfg/appsettings.xml
+```
+
+本仓库共有三份源配置，已统一为同一套本地测试认证信息：
+
+- `YiKdWebClient/YiKdWebCfg/appsettings.xml`
+- `ConsoleTestNet48/YiKdWebCfg/appsettings.xml`
+- `ConsoleTestNet80/YiKdWebCfg/appsettings.xml`
+
+构建时配置文件会复制到输出目录。请修改源文件，不要只修改 `bin` 或 `obj` 目录中的临时副本。
+
+### 3.2 完整配置示例
+
+下面是当前仓库的本地测试配置。**使用者必须替换为自己的授权信息。**
+
+```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
-
   <appSettings>
+    <!-- 数据中心 ID / 账套 ID -->
+    <add key="X-KDApi-AcctID" value="6979b9812f3f89"/>
 
-    <!-- 当前使用的 账套ID(即数据中心id) -->
-
-    <!-- 第三方系统登录授权的账套ID（即open.kingdee.com网站的第三方系统登录授权中的数据中心标识）-->
-
-    <!-- 在第三方系统登录授权页面点击“生成测试链接”按钮后即可查看   -->
-
-    <add key="X-KDApi-AcctID" value="629bd5285d655d"/>
-
-    <!-- 第三方系统登录授权的 集成用户名称  -->
-
-    <!-- 补丁版本为PT-146894 [7.7.0.202111]及后续的版本，则为指定用户登录列表中任一用户  -->
-
-    <!-- 若第三方系统登录授权已勾选“允许全部用户登录”，则无以上限制  -->
-
+    <!-- 第三方系统登录授权中的集成用户 -->
     <add key="X-KDApi-UserName" value="Administrator"/>
 
-    <!-- 第三方系统登录授权的 应用ID  -->
+    <!-- 第三方系统登录授权的应用 ID -->
+    <add key="X-KDApi-AppID" value="354749_36dv7cio6mC5X8zLX/6tUa0M6JSU6sKE"/>
 
-    <add key="X-KDApi-AppID" value="2********************P"/>
+    <!-- 第三方系统登录授权的应用密钥；请替换 -->
+    <add key="X-KDApi-AppSec" value="c1f59a3747c94804b6417872f1b272a6"/>
 
-    <!-- 第三方系统登录授权的 应用密钥  -->
-
-    <add key="X-KDApi-AppSec" value="a***********************7"/>
-
-    <!-- 账套语系，默认2052  -->
-
+    <!-- 账套语系，简体中文通常为 2052 -->
     <add key="X-KDApi-LCID" value="2052"/>
 
-    <!-- 组织编码，启用多组织时配置对应的组织编码才有效(使用签名模式认证有效，其他待测试，可以先不填写)  -->
+    <!-- 启用多组织时可填写组织编码 -->
+    <!--<add key="X-KDApi-OrgNum" value="100"/>-->
 
-    <!--<add key="X-KDApi-OrgNum" value="*****"/>-->
-
-    <!-- 服务Url地址(私有云必须配置金蝶云星空产品地址，K3Cloud/结尾。若为需要走公有云网关模式,则必须置空)-->
-
-    <add key="X-KDApi-ServerUrl" value="http://127.0.0.1/k3cloud/"/>
+    <!-- 私有云通常填写以 K3Cloud/ 结尾的地址 -->
+    <add key="X-KDApi-ServerUrl" value="http://127.0.0.1/K3Cloud/"/>
   </appSettings>
-
 </configuration>
 ```
 
-# 3.API调用教程以及代码示例:
-## 1.签名信息认证:<br>(需要设置配置文件:YiKdWebCfg/appsettings.xml) 
-(目前推荐方式)注意：PT-146911 8.0.0.202205 之前的版本不支持SHA256加密，需要使用SHA1加密算法
+### 3.3 配置项说明
 
-```
-string Formid = "SEC_User";
-string Json = @"{""IsUserModelInit"":""true"",""Number"":""Administrator"",""IsSortBySeq"":""false""}";
-YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
-yiK3CloudClient.LoginType= LoginType.LoginBySignSHA1;
-//yiK3CloudClient.LoginType= LoginType.LoginBySignSHA256;
-string resultJson = yiK3CloudClient.View(Formid, Json);
+| 配置项 | 是否常用 | 说明 |
+| --- | --- | --- |
+| `X-KDApi-AcctID` | 是 | 数据中心 ID，也称账套 ID。可在第三方系统登录授权页面生成测试链接后查看。 |
+| `X-KDApi-UserName` | 是 | 集成用户。PT-146894 `[7.7.0.202111]` 及后续版本可使用指定用户登录列表中的用户；若授权允许全部用户登录，则不受该列表限制。 |
+| `X-KDApi-AppID` | 是 | 第三方系统登录授权的应用 ID。 |
+| `X-KDApi-AppSec` | 是 | 第三方系统登录授权的应用密钥。不要使用生产密钥运行公开示例。 |
+| `X-KDApi-LCID` | 是 | 账套语系，默认值为 `2052`。 |
+| `X-KDApi-OrgNum` | 否 | 多组织场景中的组织编码，主要用于签名认证模式。 |
+| `X-KDApi-ServerUrl` | 是 | 私有云填写产品地址，并以 `K3Cloud/` 结尾；使用公有云网关时按官方要求配置。 |
 
+### 3.4 私有云与公有云网关
 
+较新的公有云环境曾要求通过 `https://api.kingdee.com/galaxyapi/` 网关调用，网关方式需要 API 签名认证。根据原文档在 2024 年 10 月获得的信息，公有云当时不再统一强制使用网关；实际接入规则仍应以目标环境和金蝶官方最新要求为准。YiKdWebClient 已包含普通服务地址和签名相关能力。
 
-/*如下信息为可以使用postman调试的报文和地址*/
-Console.WriteLine("真实的登录地址: ");
-Console.WriteLine(yiK3CloudClient.ReturnLoginWebModel.RequestUrl);
-Console.WriteLine("真实的登录报文: ");
-Console.WriteLine(yiK3CloudClient.ReturnLoginWebModel.RealRequestBody);
-//真实的操作请求地址
-string RequestUrl = yiK3CloudClient.ReturnOperationWebModel.RequestUrl;
-Console.WriteLine("真实的操作请求地址: ");
-Console.WriteLine(RequestUrl);
-//真实的操作请求报文
-string RealRequestBody = yiK3CloudClient.ReturnOperationWebModel.RealRequestBody;
-Console.WriteLine("真实的操作请求报文: ");
-Console.WriteLine(RealRequestBody);
-Console.WriteLine("真实的操作请求返回结果: ");
-Console.WriteLine(resultJson);
-Console.ReadKey();
-```
-完整的请求以及返回示例:
-![输入图片说明](%E8%AF%B7%E6%B1%82%E4%BB%A5%E5%8F%8A%E8%BF%94%E5%9B%9E%E7%A4%BA%E4%BE%8B.png)
-## 2.第三方授权认证:<br>(需要设置配置文件:YiKdWebCfg/appsettings.xml)
+## 4. 五分钟运行第一个示例
 
+以下步骤适合第一次接触项目的开发者。
 
+1. 安装 .NET 8 SDK，并确认 `dotnet --info` 可以正常执行。
+2. 确认本机能够访问 `X-KDApi-ServerUrl`，当前示例地址是 `http://127.0.0.1/K3Cloud/`。
+3. 将三份 `appsettings.xml` 替换为自己的数据中心、应用和服务地址。
+4. 在仓库根目录构建示例：
 
-```
-///第三方授权认证
-string Formid = "SEC_User";
-string Json =@"{""IsUserModelInit"":""true"",""Number"":""Administrator"",""IsSortBySeq"":""false""}";
-YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
-yiK3CloudClient.LoginType = LoginType.LoginByAppSecret;
-var resultJson  = yiK3CloudClient.View(Formid, Json);
-```
+   ```powershell
+   dotnet build .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0
+   ```
 
+5. 查看全部示例命令：
 
+   ```powershell
+   dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- help
+   ```
 
-可以获取到请求的真实地址，和真实请求的body 如下图
-![输入图片说明](%E8%AF%B7%E6%B1%82.png)
+6. 运行推荐的 SHA256 签名示例：
 
-可以利用此信息，使用postman 等接口调试工具进行调试，更方便快捷。 也可以使用其它开发语言进行请求，原理一致
+   ```powershell
+   dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- sign-sha256
+   ```
 
+控制台会依次显示登录请求与响应、业务请求与响应以及方法返回值。HTTP 请求完成并不代表业务一定成功，请继续检查返回报文中的 `LoginResultType`、`IsSuccessByAPI`、`ResponseStatus.IsSuccess`、`ErrorCode` 和 `Message`。
 
-## 3.旧版用户名密码认证:(不需要设置appsettings.xml)
- 
-```
-///旧版用户名密码认证
- string Formid = "SEC_User";
- string Json =@"{""IsUserModelInit"":""true"",""Number"":""Administrator"",""IsSortBySeq"":""false""}";
- YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
- yiK3CloudClient.LoginType= LoginType.ValidateLogin;
- yiK3CloudClient.validateLoginSettingsModel=new ValidateLoginSettingsModel() { Url = @"http://127.0.0.1/K3Cloud/", DbId= "629bd5285d655d", UserName="demo",Password="123456",lcid=2052};
- var resultJson = yiK3CloudClient.View(Formid, Json);
-```
-## 4.集成密钥文件认证:(不需要设置appsettings.xml)
-```
-string Formid = "SEC_User";
-string Json = @"{""IsUserModelInit"":""true"",""Number"":""Administrator"",""IsSortBySeq"":""false""}";
-YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
-yiK3CloudClient.LoginType = LoginType.LoginBySimplePassport;
-string cnfFilePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "YiKdWebCfg", "API测试.cnf");
-yiK3CloudClient.LoginBySimplePassportModel = new LoginBySimplePassportModel() { Url = @"http://127.0.0.1/K3Cloud/", CnfFilePath = cnfFilePath };
-var resultJson = yiK3CloudClient.View(Formid, Json);
+## 5. ConsoleTestNet80 示例运行器
+
+README 中的示例已经移植到 `ConsoleTestNet80`。每个示例都有独立命令，不需要反复注释和取消注释 `Program.cs`。
+
+```text
+sign-sha256       签名信息认证（SHA256）
+sign-sha1         签名信息认证（SHA1）
+app-secret        第三方系统登录授权
+validate-login    旧版用户名密码认证
+simple-passport   集成密钥文件认证
+api-sign-headers  API 请求头签名认证
+dynamic-config    代码动态配置授权信息
+custom-config-path 自定义配置文件路径
+custom-webapi     调用自定义 WebAPI
+sso-v4            单点登录 V4
+upload-file       文件分块上传
+upload-progress   文件分块上传（进度回调）
+upload-base64     Base64 流分块上传
 ```
 
-## 5.API请求头签名:(需要设置配置文件:YiKdWebCfg/appsettings.xml)
+统一运行格式：
 
-~~~
-string Formid = "SEC_User";
-string Json = @"{""IsUserModelInit"":""true"",""Number"":""Administrator"",""IsSortBySeq"":""false""}";
-YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
-yiK3CloudClient.LoginType=LoginType.LoginByApiSignHeaders;
-var resultJson = yiK3CloudClient.View(Formid, Json);
-Console.WriteLine(resultJson);
-~~~
-API请求头签名认证的最大特点是，真实的请求中，没有调用登陆验证接口，web请求次数会大幅度降低<br>
-(注:但是官方已经删除了这种方式对应的帖子已经算法，使用的时候需要慎重)
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- <示例命令>
+```
 
+### 5.1 可选环境变量
 
-## 工具调试postman，Apipost等：
-如下为使用postman，Apipost 工具的方法
-~~~
- //签名请求头的字符串，可以直接导入postman，Apipost
-string RequestHeadersString = yiK3CloudClient.RequestHeadersString;
-Console.WriteLine("签名请求头的字符串，可以直接导入postman，Apipost:");
-Console.WriteLine(RequestHeadersString);
-//真实的请求地址
-string RequestUrl = yiK3CloudClient.ReturnOperationWebModel.RequestUrl;
-Console.WriteLine("真实的请求地址: ");
-Console.WriteLine(RequestUrl);
-//真实的请求报文
-string RealRequestBody = yiK3CloudClient.ReturnOperationWebModel.RealRequestBody;
-Console.WriteLine("真实的请求报文: ");
-Console.WriteLine(RealRequestBody);
-Console.WriteLine("请求结果: ");
-Console.WriteLine(resultJson);
-~~~
+环境变量适合临时切换环境，不会修改仓库文件。
 
-运行结果如下:
-![输入图片说明](API%E7%AD%BE%E5%90%8D%E6%A8%A1%E5%BC%8F%E8%BF%90%E8%A1%8C%E6%95%88%E6%9E%9C.png)
+| 环境变量 | 用途 | 默认值或来源 |
+| --- | --- | --- |
+| `YIKD_CONFIG_PATH` | 自定义 `appsettings.xml` 路径 | 输出目录中的 `YiKdWebCfg/appsettings.xml` |
+| `YIKD_CNF_PATH` | 集成密钥文件路径 | 输出目录中的 `YiKdWebCfg/API测试.cnf` |
+| `YIKD_SERVER_URL` | 临时覆盖服务地址 | 从 XML 读取 |
+| `YIKD_ACCT_ID` | 动态配置示例的数据中心 ID | 从 XML 读取 |
+| `YIKD_USER_NAME` | 动态配置示例的集成用户 | 从 XML 读取 |
+| `YIKD_APP_ID` | 动态配置示例的应用 ID | 从 XML 读取 |
+| `YIKD_APP_SECRET` | 动态配置示例的应用密钥 | 从 XML 读取 |
+| `YIKD_LCID` | 动态配置示例的语系 | 从 XML 读取 |
+| `YIKD_ORG_NUM` | 动态配置示例的组织编码 | 从 XML 读取，可为空 |
+| `YIKD_VALIDATE_DBID` | 旧版登录的数据中心 ID | 从 XML 读取 |
+| `YIKD_VALIDATE_USERNAME` | 旧版登录用户名 | `demo` |
+| `YIKD_VALIDATE_PASSWORD` | 旧版登录密码 | 无默认值，必须显式设置 |
+| `YIKD_VALIDATE_LCID` | 旧版登录语系 | `2052` |
+| `YIKD_UPLOAD_FILE` | 上传示例文件路径 | 输出目录中的 `SampleFiles/upload-demo.txt` |
+| `YIKD_UPLOAD_FORM_ID` | 上传目标表单 ID | `SAL_SaleOrder` |
+| `YIKD_UPLOAD_INTER_ID` | 上传目标单据内码 | `100020` |
+| `YIKD_UPLOAD_BILL_NO` | 上传目标单据编号 | `XSDD000019` |
+| `YIKD_UPLOAD_CHUNK_SIZE` | 上传分块大小（字节） | `2 * 1024 * 1024` |
+| `YIKD_CUSTOM_SQL` | 自定义 WebAPI 示例 SQL | `SELECT TOP 10 * FROM T_BD_MATERIAL_L` |
 
-## JSON格式说明
-传入方法的JSON格式，与金蝶官方文档要求的格式完全一致. 注:(官方文档的JSON格式，并不是最终http请求的格式)
-## 功能列表
-(功能名称与官方功能名方式相同，以此类推),具体如下:<br>
+### 5.2 截图说明
+
+本 README 的 13 张示例截图均由 `ConsoleTestNet80` 在本地环境真实运行后生成，能够看到实际 URL、请求报文和返回报文。为了让图片在 GitHub/Gitee 中保持可读，截图模式只折叠超长字段和大响应的中间行；直接运行相同命令会输出完整报文。请求 ID、时间戳、签名、SessionId 和业务数据每次运行都可能不同。
+
+## 6. 认证与请求示例
+
+以下示例统一查看 `SEC_User` 表单中的 `Administrator` 用户：
+
+```csharp
+const string formId = "SEC_User";
+const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
+```
+
+### 6.1 签名信息认证（SHA256，推荐）
+
+支持 SHA256 的金蝶云星空版本优先使用此方式。
+
+```csharp
+using YiKdWebClient;
+using YiKdWebClient.Model;
+
+YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginBySignSHA256
+};
+
+string resultJson = client.View(formId, json);
+```
+
+运行：
+
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- sign-sha256
+```
+
+![SHA256 签名认证的实际请求与响应](docs/screenshots/01-sign-sha256.png)
+
+### 6.2 签名信息认证（SHA1，兼容旧版本）
+
+PT-146911 `8.0.0.202205` 之前的版本不支持 SHA256 时，可改用 SHA1。
+
+```csharp
+YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginBySignSHA1
+};
+
+string resultJson = client.View(formId, json);
+```
+
+运行：
+
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- sign-sha1
+```
+
+![SHA1 签名认证的实际请求与响应](docs/screenshots/02-sign-sha1.png)
+
+### 6.3 第三方系统登录授权
+
+该方式读取 `appsettings.xml` 中的数据中心 ID、集成用户、应用 ID 和应用密钥。
+
+```csharp
+YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginByAppSecret
+};
+
+string resultJson = client.View(formId, json);
+```
+
+运行：
+
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- app-secret
+```
+
+![第三方系统登录授权的实际请求与响应](docs/screenshots/03-app-secret.png)
+
+### 6.4 旧版用户名密码认证
+
+旧版认证不依赖 `appsettings.xml` 中的应用 ID 和应用密钥，但需要服务地址、数据中心 ID、用户名、密码和语系。除兼容旧系统外，不建议新项目优先使用用户名密码方式。
+
+```csharp
+string password = Environment.GetEnvironmentVariable("YIKD_VALIDATE_PASSWORD")
+    ?? throw new InvalidOperationException("请先设置 YIKD_VALIDATE_PASSWORD。");
+
+YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.ValidateLogin,
+    validateLoginSettingsModel = new ValidateLoginSettingsModel
+    {
+        Url = "http://127.0.0.1/K3Cloud/",
+        DbId = "6979b9812f3f89",
+        UserName = "demo",
+        Password = password,
+        lcid = 2052
+    }
+};
+
+string resultJson = client.View(formId, json);
+```
+
+PowerShell 运行方式：
+
+```powershell
+$env:YIKD_VALIDATE_PASSWORD = '<替换为你的测试密码>'
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- validate-login
+Remove-Item Env:\YIKD_VALIDATE_PASSWORD
+```
+
+截图中登录请求确实使用了本次运行密码，但展示前已把密码替换为 `******`。
+
+![旧版用户名密码认证的实际请求与响应，密码已脱敏](docs/screenshots/04-validate-login.png)
+
+### 6.5 集成密钥文件认证
+
+将目标环境生成的 `.cnf` 集成密钥文件放到 `YiKdWebCfg`，并确保它会复制到输出目录。
+
+```csharp
+string cnfFilePath = Path.Combine(
+    AppContext.BaseDirectory,
+    "YiKdWebCfg",
+    "API测试.cnf");
+
+YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginBySimplePassport,
+    LoginBySimplePassportModel = new LoginBySimplePassportModel
+    {
+        Url = "http://127.0.0.1/K3Cloud/",
+        CnfFilePath = cnfFilePath
+    }
+};
+
+string resultJson = client.View(formId, json);
+```
+
+运行：
+
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- simple-passport
+```
+
+![集成密钥文件认证的实际请求与响应](docs/screenshots/05-simple-passport.png)
+
+### 6.6 API 请求头签名认证
+
+API 请求头签名模式不会先调用登录验证接口，而是直接给业务请求生成签名请求头，因此可以减少一次 Web 请求。原文档同时提醒：官方已经删除过该方式对应的帖子和算法说明，生产使用前应确认目标版本仍然支持。
+
+```csharp
+YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginByApiSignHeaders
+};
+
+string resultJson = client.View(formId, json);
+
+// 可直接复制到 Postman、ApiPost 的请求头文本
+Console.WriteLine(client.RequestHeadersString);
+Console.WriteLine(client.ReturnOperationWebModel.RequestUrl);
+Console.WriteLine(client.ReturnOperationWebModel.RealRequestBody);
+Console.WriteLine(client.ReturnOperationWebModel.RealResponseBody);
+```
+
+运行：
+
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- api-sign-headers
+```
+
+![API 请求头签名认证的实际请求头、请求与响应](docs/screenshots/06-api-sign-headers.png)
+
+### 6.7 不通过固定配置文件，动态传入授权信息
+
+以下场景适合代码动态配置：
+
+1. 同一服务需要连接多个金蝶环境或多个数据中心；
+2. 不同业务操作需要切换集成用户；
+3. 配置来自数据库、配置中心或环境变量，而不是固定 XML 文件。
+
+```csharp
+AppSettingsModel settings = new AppSettingsModel
+{
+    XKDApiAcctID = "数据中心 ID",
+    XKDApiUserName = "集成用户",
+    XKDApiAppID = "应用 ID",
+    XKDApiAppSec = "应用密钥",
+    XKDApiLCID = "2052",
+    XKDApiOrgNum = "组织编码，可为空",
+    XKDApiServerUrl = "http://127.0.0.1/K3Cloud/"
+};
+
+YiK3CloudClient client = new YiK3CloudClient
+{
+    AppSettingsModel = settings,
+    LoginType = LoginType.LoginByAppSecret
+};
+
+string resultJson = client.View(formId, json);
+```
+
+运行：
+
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- dynamic-config
+```
+
+![代码动态配置授权信息的实际请求与响应](docs/screenshots/07-dynamic-config.png)
+
+### 6.8 自定义配置文件路径
+
+必须在创建 `YiK3CloudClient` 之前设置路径。
+
+```csharp
+using YiKdWebClient.CommonService;
+
+XmlConfigHelper.AppConfigPath = @"D:\configs\kingdee\appsettings.xml";
+
+YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginBySignSHA256
+};
+
+string resultJson = client.View(formId, json);
+```
+
+示例运行器默认通过 `YIKD_CONFIG_PATH` 指定路径：
+
+```powershell
+$env:YIKD_CONFIG_PATH = 'D:\configs\kingdee\appsettings.xml'
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- custom-config-path
+```
+
+![自定义配置文件路径的实际请求与响应](docs/screenshots/08-custom-config-path.png)
+
+### 6.9 如何查看真实请求和响应
+
+所有认证方式都可以使用同一组属性排查问题：
+
+```csharp
+Console.WriteLine("真实的登录地址：");
+Console.WriteLine(client.ReturnLoginWebModel.RequestUrl);
+Console.WriteLine("真实的登录请求报文：");
+Console.WriteLine(client.ReturnLoginWebModel.RealRequestBody);
+Console.WriteLine("真实的登录返回报文：");
+Console.WriteLine(client.ReturnLoginWebModel.RealResponseBody);
+
+Console.WriteLine("真实的业务请求地址：");
+Console.WriteLine(client.ReturnOperationWebModel.RequestUrl);
+Console.WriteLine("真实的业务请求报文：");
+Console.WriteLine(client.ReturnOperationWebModel.RealRequestBody);
+Console.WriteLine("真实的业务返回报文：");
+Console.WriteLine(client.ReturnOperationWebModel.RealResponseBody);
+```
+
+复制 URL、请求头和请求体到 Postman/ApiPost 时，要注意时间戳、随机数、签名和会话信息可能很快失效。调试完成后也不要把包含密码、密钥、Cookie 或 SessionId 的导出文件提交到仓库。
+
+## 7. JSON 参数与接口功能列表
+
+传给 YiKdWebClient 方法的 JSON 与金蝶官方文档要求的参数格式一致。客户端会负责外层 HTTP 报文包装。例如：
+
+```csharp
+string formId = "SEC_User";
+string json = @"{""IsUserModelInit"":""true"",""Number"":""Administrator"",""IsSortBySeq"":""false""}";
+string resultJson = client.View(formId, json);
+```
+
+已封装的主要接口如下。功能名称尽量与金蝶官方名称保持一致：
 
 | 接口名称 | 接口含义 |
-|------|------|
-|Save|保存|
-|BatchSave|批量保存|
-|Audit|审核|
-|Delete|删除|
-|UnAudit|反审核|
-|Submit|提交|
-|View|查看|
-|ExecuteBillQuery|单据查询|
-|Draft|暂存|
-|Allocate|分配|
-|ExecuteOperation|操作接口|
-|FlexSave|弹性域保存|
-|SendMsg|发送消息|
-|Push|下推|
-|GroupSave|分组保存|
-|Disassembly|拆单|
-|QueryBusinessInfo|查询单据信息|
-|QueryGroupInfo|查询分组信息|
-|WorkflowAudit|工作流审批|
-|GroupDelete|分组删除|
-|CancelAllocate|取消分配|
-|SwitchOrg|切换组织接口|
-|CancelAssign|撤销服务接口|
-|GetSysReportData|获取报表数据|
-|AttachmentUpload|上传附件|
-|AttachmentDownLoad|下载附件|
+| --- | --- |
+| `Save` | 保存 |
+| `BatchSave` | 批量保存 |
+| `Audit` | 审核 |
+| `Delete` | 删除 |
+| `UnAudit` | 反审核 |
+| `Submit` | 提交 |
+| `View` | 查看 |
+| `ExecuteBillQuery` | 单据查询 |
+| `Draft` | 暂存 |
+| `Allocate` | 分配 |
+| `ExecuteOperation` | 操作接口 |
+| `FlexSave` | 弹性域保存 |
+| `SendMsg` | 发送消息 |
+| `Push` | 下推 |
+| `GroupSave` | 分组保存 |
+| `Disassembly` | 拆单 |
+| `QueryBusinessInfo` | 查询单据信息 |
+| `QueryGroupInfo` | 查询分组信息 |
+| `WorkflowAudit` | 工作流审批 |
+| `GroupDelete` | 分组删除 |
+| `CancelAllocate` | 取消分配 |
+| `SwitchOrg` | 切换组织接口 |
+| `CancelAssign` | 撤销服务接口 |
+| `GetSysReportData` | 获取报表数据 |
+| `AttachmentUpload` | 上传附件 |
+| `AttachmentDownLoad` | 下载附件 |
 
-## 如何不通过配置文件配置第三方登陆授权信息
-1、客户存在多个星空环境或者一个星空环境存在多个数据中心时，通过框架的配置文件只允许配置一个第三方登录授权信息，这个时候应该怎么做系统集成对接呢？<br>
-2、第三方登录授权信息中配置了集成用户，做webapi集成时，操作用户就为配置信息中的集成用户，但是做不同操作需要切换不同的用户时，应该怎么来配置？<br>
-当环境信息需要动态的变化时，这个时候我们就不能使用配置文件的方式初始化框架了，需要通过参数化的方式动态的初始化实例，传递不同的配置信息，不同的集成用户，再进行对应的接口调用。
-```
-string Formid = "SEC_User";
-string Json = @"{""IsUserModelInit"":""true"",""Number"":""Administrator"",""IsSortBySeq"":""false""}";
-AppSettingsModel appSettingsModel = new AppSettingsModel();
-appSettingsModel.XKDApiAcctID = "账套ID(即数据中心id)";
-appSettingsModel.XKDApiUserName = "第三方系统登录授权的用户名称";
-appSettingsModel.XKDApiAppID = "第三方系统登录授权的 应用ID";
-appSettingsModel.XKDApiAppSec = "第三方系统登录授权的 应用密钥";
-appSettingsModel.XKDApiLCID = "账套语系，默认2052";
-appSettingsModel.XKDApiServerUrl = "Url地址";
-YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
-yiK3CloudClient.AppSettingsModel = appSettingsModel;
-yiK3CloudClient.LoginType = LoginType.LoginByAppSecret;
-string resultJson = yiK3CloudClient.View(Formid, Json);
+## 8. 单点登录
+
+项目支持 SSO V1、V2、V3 和 V4。下面以 V4 为例。它会在本地生成签名参数和入口 URL，不发送 HTTP 请求，因此没有“返回报文”。
+
+```csharp
+using YiKdWebClient.SSO;
+
+SSOHelper helper = new SSOHelper();
+
+// 指定用户；不传时通常使用配置文件中的集成用户
+helper.GetSsoUrlsV4("Administrator");
+
+Console.WriteLine(helper.simplePassportLoginArg.dbid);
+Console.WriteLine(helper.simplePassportLoginArg.appid);
+Console.WriteLine(helper.simplePassportLoginArg.username);
+Console.WriteLine(helper.timestamp);
+Console.WriteLine(helper.simplePassportLoginArg.signeddata);
+Console.WriteLine(helper.argJosn);
+Console.WriteLine(helper.argJsonBase64);
+Console.WriteLine(helper.SSOLoginUrlObject.silverlightUrl);
+Console.WriteLine(helper.SSOLoginUrlObject.html5Url);
+Console.WriteLine(helper.SSOLoginUrlObject.wpfUrl);
+
+// 旧版本按目标环境需要选择：
+// helper.GetSsoUrlsV3("Administrator");
+// helper.GetSsoUrlsV2("Administrator");
+// helper.GetSsoUrlsV1("Administrator");
 ```
 
-# 4.单点登录功能
+运行：
 
-## 调用示例代码:
-此方法(需要设置配置文件:YiKdWebCfg/appsettings.xml),或者在sSOHelper.appSettingsModel中参数动态指定
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- sso-v4
+```
 
-```
-SSOHelper sSOHelper = new SSOHelper(){};
-/*若指定了配置文件，仅需要在此指定用户即可，若不指定则自动获取配置文件中的集成用户*/
-sSOHelper.GetSsoUrlsV4("Administrator");/*单点登录V4*/
-//sSOHelper.GetSsoUrlsV3("Administrator");/*单点登录V3*/
-//sSOHelper.GetSsoUrlsV2("Administrator");/*单点登录V2*/
-//sSOHelper.GetSsoUrlsV1("Administrator");/*单点登录V1*/
-/*****如下为获取到的相关单点登录相关数据***********************************/
-//数据中心ID
-Console.WriteLine("数据中心ID：" + " " + sSOHelper.simplePassportLoginArg.dbid);
-//应用ID
-Console.WriteLine("应用ID：" + " " + sSOHelper.simplePassportLoginArg.appid);
-//用户名称
-Console.WriteLine("用户名称：" + " " + sSOHelper.simplePassportLoginArg.username);
-//时间戳
-Console.WriteLine("时间戳：" + " " + sSOHelper.timestamp);
-//签名
-Console.WriteLine("签名：" + " " + sSOHelper.simplePassportLoginArg.signeddata);
-//请求参数（json格式）
-Console.WriteLine("请求参数（json格式）：" + " " + sSOHelper.argJosn);
-//参数格式化（Base64）
-Console.WriteLine("参数格式化（Base64）：" + " " + sSOHelper.argJsonBase64);
-// Silverlight入口链接
-Console.WriteLine("Silverlight入口链接:");
-Console.WriteLine(sSOHelper.SSOLoginUrlObject.silverlightUrl);
-// html5入口链接
-Console.WriteLine("html5入口链接:");
-Console.WriteLine(sSOHelper.SSOLoginUrlObject.html5Url);
-//客户端入口链接
-Console.WriteLine("客户端入口链接:");
-Console.WriteLine(sSOHelper.SSOLoginUrlObject.wpfUrl);
-Console.ReadKey();
-```
-## 返回结果:
-![输入图片说明](SSOV4%E7%BB%93%E6%9E%9C.png)
+![SSO V4 生成的真实签名参数与入口地址](docs/screenshots/10-sso-v4.png)
 
+## 9. 自定义 WebAPI
 
-# 5.其他特殊功能以及用法
-## 自定义配置文件路径
-```
-/*在运行之前，对如下的参数指定配置文件的路径*/
-YiKdWebClient.CommonService.XmlConfigHelper.AppConfigPath = @"C:\Users\Administrator\Desktop\test\appsettings.xml";
-string Formid = "SEC_User";
-string Json = @"{""IsUserModelInit"":""true"",""Number"":""Administrator"",""IsSortBySeq"":""false""}";
-YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
-yiK3CloudClient.LoginType = LoginType.LoginBySignSHA256;
-string resultJson = yiK3CloudClient.View(Formid, Json);
-```
-## 自定义webapi
-报文格式和请求参数的获取参考如下官方文档:<br>
-https://vip.kingdee.com/article/97030089581136896?specialId=448928749460099072&productLineId=1&isKnowledge=2&lang=zh-CN
+官方自定义 WebAPI 报文格式与参数说明：<https://vip.kingdee.com/article/97030089581136896?specialId=448928749460099072&productLineId=1&isKnowledge=2&lang=zh-CN>
 
+目标环境必须先部署服务端自定义 WebAPI。本仓库示例调用：
+
+```text
+GlobalServiceCustom.WebApi.DataServiceHandler.CommonRunnerService
 ```
-YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
-string jsonString = @" { ""parameters"": [ ""SELECT TOP 10 * FROM T_BD_MATERIAL_L"" ] }";
-YiKdWebClient.Model.CustomServicesStubpath customServicesStubpath = new()
+
+服务定位对象中的命名空间、类名和方法名必须与服务器端部署内容完全一致：
+
+```csharp
+YiK3CloudClient client = new YiK3CloudClient
 {
-  ProjetNamespace = "GlobalServiceCustom.WebApi",/*dll的命名空间*/
-  ProjetClassName = "DataServiceHandler",/*对应的类名*/
-  ProjetClassMethod = "CommonRunnerService"/*对应的方法名*/
+    LoginType = LoginType.LoginByAppSecret
 };
-string resultJson = yiK3CloudClient.CustomBusinessServiceByParameters(jsonString, customServicesStubpath);
 
+string jsonString = @"{ ""parameters"": [ ""SELECT TOP 10 * FROM T_BD_MATERIAL_L"" ] }";
 
-/*如下信息为可以使用postman调试的报文和地址*/
-Console.WriteLine("真实的登录地址: ");
-Console.WriteLine(yiK3CloudClient.ReturnLoginWebModel.RequestUrl);
-Console.WriteLine("真实的登录报文: ");
-Console.WriteLine(yiK3CloudClient.ReturnLoginWebModel.RealRequestBody);
-//真实的操作请求地址
-string RequestUrl = yiK3CloudClient.ReturnOperationWebModel.RequestUrl;
-Console.WriteLine("真实的操作请求地址: ");
-Console.WriteLine(RequestUrl);
-//真实的操作请求报文
-string RealRequestBody = yiK3CloudClient.ReturnOperationWebModel.RealRequestBody;
-Console.WriteLine("真实的操作请求报文: ");
-Console.WriteLine(RealRequestBody);
-Console.WriteLine("真实的操作请求返回结果: ");
+CustomServicesStubpath service = new CustomServicesStubpath
+{
+    ProjetNamespace = "GlobalServiceCustom.WebApi",
+    ProjetClassName = "DataServiceHandler",
+    ProjetClassMethod = "CommonRunnerService"
+};
+
+string resultJson = client.CustomBusinessServiceByParameters(jsonString, service);
+```
+
+原有服务调用结构截图保留在统一截图目录中：
+
+![自定义 WebAPI 服务调用结构](docs/screenshots/custom-webapi-server.png)
+
+运行：
+
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- custom-webapi
+```
+
+当前本地测试环境成功返回了 SQL 查询结果：
+
+![自定义 WebAPI 的实际登录、请求与查询结果](docs/screenshots/09-custom-webapi.png)
+
+## 10. 文件上传
+
+官方附件上传报文结构与原理：<https://vip.kingdee.com/article/296577252589190400?productLineId=1&isKnowledge=2&lang=zh-CN>
+
+上传示例默认读取 `ConsoleTestNet80/SampleFiles/upload-demo.txt`。接入自己的环境前，请替换目标表单、单据内码和单据编号，并确认金蝶环境已经配置附件存储。
+
+### 10.1 文件路径分块上传，直接返回最终结果
+
+```csharp
+YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginBySimplePassport,
+    LoginBySimplePassportModel = new LoginBySimplePassportModel
+    {
+        Url = "http://127.0.0.1/K3Cloud/",
+        CnfFilePath = Path.Combine(AppContext.BaseDirectory, "YiKdWebCfg", "API测试.cnf")
+    }
+};
+
+UploadModel uploadModel = new UploadModel();
+uploadModel.data.FormId = "SAL_SaleOrder";
+uploadModel.data.InterId = "100020";
+uploadModel.data.BillNO = "XSDD000019";
+
+string resultJson = AttachmentHelper.AttachmentUploadByFilePath(
+    @"D:\files\test.pdf",
+    client,
+    uploadModel,
+    2 * 1024 * 1024);
+
 Console.WriteLine(resultJson);
-Console.ReadKey();
 ```
-返回结果的示例:<br>
-![输入图片说明](%E8%87%AA%E5%AE%9A%E4%B9%89webapi%E7%BB%93%E6%9E%9C.png)
-## 文件上传:
-### 文件分块上传(直接返回最终结果)
 
+运行：
+
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- upload-file
 ```
-YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
 
-// 设置登录类型
-yiK3CloudClient.LoginType = LoginType.LoginBySimplePassport;
+![从文件路径分块上传的实际请求与响应](docs/screenshots/11-upload-file.png)
 
-// 配置集成密钥路径
-string cnfFilePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "YiKdWebCfg", "API测试.cnf");
+### 10.2 文件路径分块上传，获取完整进度
 
-// 设置登录信息
-yiK3CloudClient.LoginBySimplePassportModel = new LoginBySimplePassportModel()
+```csharp
+Action<FileChunk, YiK3CloudClient> progress = (chunk, currentClient) =>
 {
-    Url = @"http://127.0.0.1/K3Cloud/",
-    CnfFilePath = cnfFilePath
-};
+    Console.WriteLine($"正在处理第 {chunk.Chunkindex + 1} 个分块");
+    Console.WriteLine(currentClient.ReturnOperationWebModel.RealRequestBody);
+    Console.WriteLine(currentClient.ReturnOperationWebModel.RealResponseBody);
 
-// 文件路径
-string path = @"D:\test1.pdf";
-
-// 创建上传模型
-UploadModel uploadModelTemplate = new UploadModel();
-uploadModelTemplate.data.FormId = "BD_Currency";
-uploadModelTemplate.data.InterId = "143717";
-uploadModelTemplate.data.BillNO = "测试编码";
-
-// 上传附件
-string resJson = AttachmentHelper.AttachmentUploadByFilePath(path, yiK3CloudClient, uploadModelTemplate, 1024 * 1024 * 2);
-
-// 输出结果
-Console.WriteLine(resJson);
-
-```
-
-
-### 文件分块上传(获取完整的上传过程)
-
-```
-YiK3CloudClient yiK3CloudClient = new YiKdWebClient.YiK3CloudClient();
-
-// 设置登录类型
-yiK3CloudClient.LoginType = LoginType.LoginBySimplePassport;
-
-// 配置集成密钥路径
-string cnfFilePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "YiKdWebCfg", "API测试.cnf");
-
-// 设置登录信息
-yiK3CloudClient.LoginBySimplePassportModel = new LoginBySimplePassportModel()
-{
-    Url = @"http://127.0.0.1/K3Cloud/",
-    CnfFilePath = cnfFilePath
-};
-
-// 文件路径
-string path = @"D:\test1.pdf";
-
-// 创建上传模型
-UploadModel uploadModelTemplate = new UploadModel();
-uploadModelTemplate.data.FormId = "BD_Currency";
-uploadModelTemplate.data.InterId = "143717";
-uploadModelTemplate.data.BillNO = "测试编码";
-
-// 定义上传进度回调
-Action<FileChunk, YiK3CloudClient> progressAction = (fileChunk, yiK3CloudClient) =>
-{
-    Console.WriteLine("正在处理第" + (fileChunk.Chunkindex + 1) + "分块");
-    Console.WriteLine("请求报文为:" + yiK3CloudClient.ReturnOperationWebModel.RealRequestBody);
-    Console.WriteLine("处理结果为:" + yiK3CloudClient.ReturnOperationWebModel.RealResponseBody);
-    if (fileChunk.IsLast)
+    if (chunk.IsLast)
     {
         Console.WriteLine("所有分块处理结束");
     }
 };
 
-// 上传附件
-string resJson = AttachmentHelper.AttachmentUploadByFilePath(path,yiK3CloudClient,uploadModelTemplate,1024 * 1024 * 2,progressAction);
-
-// 输出结果
-Console.WriteLine(resJson);
-
+string resultJson = AttachmentHelper.AttachmentUploadByFilePath(
+    @"D:\files\test.pdf",
+    client,
+    uploadModel,
+    2 * 1024 * 1024,
+    progress);
 ```
 
-### base64流分块上传辅助函数
-AttachmentUploadByFilePath函数更换为AttachmentUploadByBase64
+运行：
 
-### 官方报文结构以及原理
-https://vip.kingdee.com/article/296577252589190400?productLineId=1&isKnowledge=2&lang=zh-CN
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- upload-progress
+```
 
-# 框架兼容性说明
-当前已经支持编译的版本如下:<br>
-net10.0;net9.0;net8.0;net7.0;net6.0;net5.0;net481;net48;net472;net471;net47;net462;netstandard2.1;netstandard2.0;
+![带进度回调的文件分块上传实际请求与响应](docs/screenshots/12-upload-progress.png)
 
-# 框架基础依赖说明
-基于如下原生类库编写，不包含第三方插件(如下插件不需要额外引入)<br>
-System.Net.Http;<br>System.Text.Json;<br>System.Security.Cryptography.Cng;
-# 项目地址:
-## gitee:
-https://gitee.com/lnsyzjw/yi-kd-web-client
-## github:
-https://github.com/1609676823/YiKdWebClient
-# 官方的webapi接口说明书
-https://vip.kingdee.com/knowledge/407944297590364160?productLineId=1&isKnowledge=2&lang=zh-CN
-<br>[点此下载](%E9%87%91%E8%9D%B6%E4%BA%91%E6%98%9F%E7%A9%BAWebAPI%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E%E4%B9%A6_V6.0.docx)
+### 10.3 Base64 流分块上传
 
+把文件内容转换为 Base64 后，调用 `AttachmentUploadByBase64`：
 
+```csharp
+string filePath = @"D:\files\test.pdf";
+string base64 = Convert.ToBase64String(File.ReadAllBytes(filePath));
 
+string resultJson = AttachmentHelper.AttachmentUploadByBase64(
+    base64,
+    Path.GetFileName(filePath),
+    client,
+    uploadModel,
+    2 * 1024 * 1024);
+```
 
+运行：
 
+```powershell
+dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- upload-base64
+```
+
+![Base64 流分块上传的实际请求与响应](docs/screenshots/13-upload-base64.png)
+
+> [!NOTE]
+> 当前截图中的三个上传请求都真实到达了本地金蝶服务，但测试环境返回 `ErrorCode: 500`，消息指出附件存储配置项为空。它是服务器端测试环境配置结果，不是伪造的成功报文，也不是示例进程崩溃。正确配置附件存储，并替换成目标环境中真实存在的表单与单据后，再根据 `ResponseStatus.IsSuccess` 判断上传是否成功。
+
+## 11. 框架兼容性与依赖
+
+当前库项目配置的目标框架：
+
+```text
+net10.0
+net9.0
+net8.0
+net7.0
+net6.0
+net5.0
+net481
+net48
+net472
+net471
+net47
+net462
+netstandard2.1
+netstandard2.0
+```
+
+框架主要基于 .NET/Microsoft 基础类库实现：
+
+- `System.Net.Http`
+- `System.Text.Json`
+- `System.Security.Cryptography.Cng`
+
+项目不依赖金蝶官方 SDK，也不依赖 `Newtonsoft.Json`。部分旧目标框架会通过 NuGet 引用相应版本的 Microsoft 基础包，业务方无需额外引入第三方 JSON 框架。
+
+## 12. 常见问题
+
+### 12.1 找不到 `YiKdWebCfg/appsettings.xml`
+
+确认文件属性会复制到输出目录。使用本仓库示例时重新构建：
+
+```powershell
+dotnet build .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0
+```
+
+也可以设置 `YIKD_CONFIG_PATH`，或在创建客户端前设置 `XmlConfigHelper.AppConfigPath`。
+
+### 12.2 返回登录失败
+
+依次检查：
+
+1. 数据中心 ID 是否属于当前服务地址；
+2. 集成用户是否在第三方系统登录授权范围内；
+3. 应用 ID 与应用密钥是否成对；
+4. 语系和组织编码是否适用于当前账套；
+5. 服务器时间是否准确，避免签名时间戳偏差；
+6. 旧版登录是否正确设置 `YIKD_VALIDATE_PASSWORD`。
+
+### 12.3 登录成功，但业务调用失败
+
+登录成功只代表身份验证通过。继续检查业务返回中的 `ResponseStatus`、权限、表单 ID、字段名、单据状态和组织范围。将控制台打印的实际 URL、请求头和请求体复制到 Postman/ApiPost，可帮助区分客户端参数问题与服务端业务规则问题。
+
+### 12.4 `API测试.cnf` 无法使用
+
+`.cnf` 文件必须由目标环境生成，并与服务地址和数据中心匹配。复制其他环境的文件通常无法正常登录。替换文件后重新构建，或用 `YIKD_CNF_PATH` 指向新文件。
+
+### 12.5 上传返回存储配置错误
+
+这表示请求已经到达附件接口，但服务器没有正确配置文件存储。请先在金蝶环境中完成附件/对象存储配置，再确认表单 ID、单据内码和单据编号真实存在。
+
+### 12.6 README 截图为什么省略了部分行
+
+完整登录上下文和单据对象可能包含上百行，Base64 字段也很长。截图生成器只折叠中间行和超长字段，字段来源仍是当次真实调用。直接运行对应示例命令即可查看完整输出。
+
+## 13. 重新生成 README 截图
+
+全部截图统一存放在 `docs/screenshots`，生成脚本是 `docs/generate-readme-screenshots.ps1`。脚本会依次运行 13 个示例，再使用 Microsoft Edge 无头模式把真实控制台输出保存为 PNG。
+
+```powershell
+$env:YIKD_VALIDATE_PASSWORD = '<替换为你的测试密码>'
+powershell -NoProfile -ExecutionPolicy Bypass -File .\docs\generate-readme-screenshots.ps1
+Remove-Item Env:\YIKD_VALIDATE_PASSWORD
+```
+
+安全措施：
+
+- `validate-login` 的密码不会写入源码；
+- 控制台输出会先脱敏；
+- 截图脚本会再次替换密码，避免回归时意外泄漏；
+- 临时 HTML 文件在每张截图生成后立即删除；
+- 截图只保留实际请求/响应中适合公开测试仓库的内容。
+
+## 14. 项目地址
+
+- Gitee：<https://gitee.com/lnsyzjw/yi-kd-web-client>
+- GitHub：<https://github.com/1609676823/YiKdWebClient>
+- NuGet：<https://www.nuget.org/packages/YiKdWebClient>
+
+本项目采用 [MIT License](./LICENSE)。
