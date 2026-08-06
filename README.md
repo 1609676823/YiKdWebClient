@@ -17,6 +17,11 @@ YiKdWebClient 是一个用于调用 **金蝶云星空 WebAPI** 的轻量级 .NET
 > [!IMPORTANT]
 > 旧版 `demo` 用户密码没有写入源码、README 或截图。`validate-login` 示例只从 `YIKD_VALIDATE_PASSWORD` 环境变量读取密码，控制台展示真实请求结构时会把密码替换为 `******`。
 
+> [!NOTE]
+> **AI 辅助开发说明（自 v1.0.0.32 起）**
+>
+> v1.0.0.32 及后续版本中的部分代码、测试、文档、示例及其他项目内容，可能在维护者指导和审查下，借助 AI 工具生成、补全、重构或校对，包括但不限于 OpenAI Codex、ChatGPT、GitHub Copilot、Anthropic Claude、Google Gemini、Cursor 等。AI 辅助内容在合并或发布前仍会由维护者进行审查和必要验证；使用者也应结合实际环境，自行评估其正确性、安全性与适用性。
+
 ## 目录
 
 - [1. 相关资料](#1-相关资料)
