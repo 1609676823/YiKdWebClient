@@ -27,7 +27,7 @@ namespace ConsoleTestNet48
             //Console.WriteLine(resultJson);
 
             //// var resultJson = yiK3CloudClient.GetDataCenterList();
-            /// //// var res = yiK3CloudClient.ExecuteOperation("view",Formid, Json);
+            /// //// var res = yiK3CloudClient.ExecuteOperation(Formid, "view", Json);
 
             #endregion
 

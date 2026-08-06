@@ -359,13 +359,21 @@ namespace YiKdWebClient
         /// <summary>
         /// 通用操作接口
         /// </summary>
-        /// <param name="opNumber"></param>
         /// <param name="formid"></param>
+        /// <param name="opNumber"></param>
         /// <param name="json"></param>
         /// <param name="AutoLogin"></param>
         /// <param name="AutoLogout"></param>
         /// <returns></returns>
-        public string ExecuteOperation(string opNumber, string formid, string json, bool AutoLogin = true, bool AutoLogout = true)
+        /// <remarks>
+        /// ⚠ BREAKING CHANGE：参数顺序已由旧版的
+        /// <c>ExecuteOperation(opNumber, formid, json, ...)</c>
+        /// 调整为与金蝶官方 SDK 一致的
+        /// <c>ExecuteOperation(formid, opNumber, json, ...)</c>。
+        /// 升级后请务必检查所有现有调用点，避免将操作编码和表单 ID 传反。
+        /// </remarks>
+        [Obsolete("兼容性变更：ExecuteOperation 参数顺序已由 (opNumber, formid, json, ...) 调整为与官方 SDK 一致的 (formid, opNumber, json, ...)。方法仍可使用，请检查并修改现有调用。", false)]
+        public string ExecuteOperation(string formid, string opNumber, string json, bool AutoLogin = true, bool AutoLogout = true)
         {
             string resjson = string.Empty;
             #region 校验登录是否成功旧版
