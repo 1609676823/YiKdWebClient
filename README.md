@@ -557,6 +557,26 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- sso
 GlobalServiceCustom.WebApi.DataServiceHandler.CommonRunnerService
 ```
 
+### 9.1 服务端项目采用直接 DLL 引用
+
+`GlobalServiceCustom.WebApi` 是 .NET Framework 4.8 类库，当前不再使用 `app.config`、程序集绑定重定向或 `packages.config`。编译所需程序集直接放在项目的 `kdbin` 目录，并通过 `.csproj` 中的相对 `HintPath` 引用：
+
+- `Kingdee.BOS.dll`
+- `Kingdee.BOS.ServiceFacade.KDServiceFx.dll`
+- `Kingdee.BOS.ServiceHelper.dll`
+- `Kingdee.BOS.WebApi.ServicesStub.dll`
+- `Newtonsoft.Json.dll`
+
+这些引用均设置了 `Private=False`。因此构建输出只有自定义插件 DLL 和可选 PDB，不会把金蝶运行时程序集复制到输出目录：
+
+```powershell
+dotnet build .\GlobalServiceCustom.WebApi\GlobalServiceCustom.WebApi.csproj -c Release
+```
+
+部署时使用 `GlobalServiceCustom.WebApi/bin/Release/GlobalServiceCustom.WebApi.dll`，不要用仓库 `kdbin` 中的 DLL 覆盖服务器程序集。更换目标金蝶环境或产品版本时，应从该目标环境取得同版本 DLL，替换 `kdbin` 中的编译引用后重新构建，避免不同补丁版本之间的 API 不兼容。
+
+### 9.2 客户端调用
+
 服务定位对象中的命名空间、类名和方法名必须与服务器端部署内容完全一致：
 
 ```csharp
