@@ -238,21 +238,10 @@ namespace YiKdWebClient
             StringBuilder stringBuilder = new StringBuilder();
             foreach (char value in str)
             {
-
-
-                if (System.Web.HttpUtility.UrlEncode(value.ToString()).Length > 1)
-
-                {
-                    stringBuilder.Append(System.Web.HttpUtility.UrlEncode(value.ToString(), encoding).ToUpper());
-
-
-
-
-                }
-                else
-                {
-                    stringBuilder.Append(value);
-                }
+                string encodedValue = System.Web.HttpUtility.UrlEncode(value.ToString(), encoding);
+                stringBuilder.Append(encodedValue.Length > 1
+                    ? encodedValue.ToUpperInvariant()
+                    : encodedValue);
             }
             return stringBuilder.ToString();
         }

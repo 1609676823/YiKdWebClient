@@ -181,7 +181,10 @@ namespace YiKdWebClient.ComWebHelper
                 {
                     queryString.Append("&");
                 }
-                queryString.Append(parameter.Key).Append("=").Append(WebUtility.UrlEncode(parameter.Value));
+                queryString
+                    .Append(WebUtility.UrlEncode(parameter.Key))
+                    .Append("=")
+                    .Append(WebUtility.UrlEncode(parameter.Value));
             }
             return queryString.ToString();
         }

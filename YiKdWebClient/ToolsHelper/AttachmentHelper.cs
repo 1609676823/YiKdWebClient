@@ -22,6 +22,8 @@ namespace YiKdWebClient.ToolsHelper
         /// <param name="chunkAction"></param>
         public static void ReadFileInChunksByAction(string filePath, Action<FileChunk> chunkAction, long chunkSize = 1024 * 1024)
         {
+            ValidateChunkArguments(chunkAction, chunkSize);
+
             // List<byte[]> chunks = new List<byte[]>();
             string fileName = Path.GetFileName(filePath); //文件名。
             using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
@@ -35,12 +37,12 @@ namespace YiKdWebClient.ToolsHelper
                     FileChunk fileChunk = new FileChunk();
                     fileChunk.Filename = fileName;
                     fileChunk.Chunkindex = Chunkindex;
+                    fileChunk.IsLast = fs.Position >= fs.Length;
                     if (bytesRead < chunkSize)
                     {
                         byte[] lastChunk = new byte[bytesRead];
                         Array.Copy(buffer, lastChunk, bytesRead);
 
-                        fileChunk.IsLast = true;
                         fileChunk.Chunkbyte = lastChunk;
                         // chunks.Add();
 
@@ -69,6 +71,8 @@ namespace YiKdWebClient.ToolsHelper
         /// <param name="chunkSize"></param>
         public static void ReadBase64ChunksByAction(string base64Data, string fileName, Action<FileChunk> chunkAction, long chunkSize = 1024 * 1024)
         {
+            ValidateChunkArguments(chunkAction, chunkSize);
+
             // 文件名可以根据需求传入或设置为固定值。
             byte[] data = Convert.FromBase64String(base64Data);
             long totalLength = data.Length;
@@ -308,12 +312,27 @@ namespace YiKdWebClient.ToolsHelper
             }
 
             // Check Entrykey and EntryinterId conditions
-            if (string.IsNullOrWhiteSpace(data.Entrykey) != string.IsNullOrWhiteSpace(data.EntryinterId))
+            bool hasEntryKey = !string.IsNullOrWhiteSpace(data.Entrykey);
+            bool hasEntryId = !string.IsNullOrWhiteSpace(data.EntryinterId) && data.EntryinterId != "-1";
+            if (hasEntryKey != hasEntryId)
             {
                 throw new ArgumentException("Entrykey 和 EntryinterId 要么全有，要么全没有。");
             }
 
             // Add additional validation rules as needed
+        }
+
+        private static void ValidateChunkArguments(Action<FileChunk> chunkAction, long chunkSize)
+        {
+            if (chunkAction == null)
+            {
+                throw new ArgumentNullException(nameof(chunkAction));
+            }
+
+            if (chunkSize <= 0 || chunkSize > int.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(chunkSize), "分块大小必须大于 0 且不能超过 Int32.MaxValue。");
+            }
         }
 
 

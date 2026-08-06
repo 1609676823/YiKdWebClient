@@ -203,7 +203,7 @@ namespace YiKdWebClient
         {
            
            
-            if (arr != null|| arr!.Length>0)
+            if (arr != null && arr.Length > 0)
             {
 
                 Array.Sort(arr, StringComparer.Ordinal);

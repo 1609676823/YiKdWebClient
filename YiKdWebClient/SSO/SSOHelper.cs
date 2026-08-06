@@ -142,7 +142,7 @@ namespace YiKdWebClient.SSO
 
             string sign = CommonFunctionHelper.Sha256Hex(sortdata);//签名V4 签名算法使用自己语言的sha256算法即可
 
-            this.url = appSettingsModel.XKDApiServerUrl;
+            this.url = ServerUrl;
             this.simplePassportLoginArg.dbid = appSettingsModel.XKDApiAcctID;
             this.simplePassportLoginArg.appid = appSettingsModel.XKDApiAppID;
             this.simplePassportLoginArg.username = appSettingsModel.XKDApiUserName;
@@ -224,7 +224,7 @@ namespace YiKdWebClient.SSO
 
             string sign = CommonFunctionHelper.GetSignatureSHA1Util(arr);//签名 V3
 
-            this.url = appSettingsModel.XKDApiServerUrl;
+            this.url = ServerUrl;
             this.simplePassportLoginArg.dbid = appSettingsModel.XKDApiAcctID;
             this.simplePassportLoginArg.appid = appSettingsModel.XKDApiAppID;
             this.simplePassportLoginArg.username = appSettingsModel.XKDApiUserName;
@@ -309,7 +309,7 @@ namespace YiKdWebClient.SSO
             string sign = CommonFunctionHelper.GetSignatureSHA1Util(arr);//签名  V2
 
 
-            this.url = appSettingsModel.XKDApiServerUrl;
+            this.url = ServerUrl;
             this.simplePassportLoginArg.dbid = appSettingsModel.XKDApiAcctID;
             this.simplePassportLoginArg.appid = appSettingsModel.XKDApiAppID;
             this.simplePassportLoginArg.username = appSettingsModel.XKDApiUserName;
@@ -404,6 +404,7 @@ namespace YiKdWebClient.SSO
             string urlBase64 = System.Text.UTF8Encoding.Default.GetBytes(urlPara).ToBase64();// Base64编码
 
             argJsonBase64 = urlBase64;
+            this.url = ServerUrl;
 
             //  argJosn = System.Text.Json.JsonSerializer.Serialize(simplePassportLoginArg, options); ;//json格式
 
@@ -437,6 +438,7 @@ namespace YiKdWebClient.SSO
         {
             string ServerUrl = string.Empty;
             if (string.IsNullOrWhiteSpace(url)) { ServerUrl = this.url!; }
+            else { ServerUrl = CommonFunctionHelper.GetServerUrl(url); }
             if (string.IsNullOrWhiteSpace(usserName)) { usserName = this.appSettingsModel.XKDApiUserName;/*用户名称*/ }
             SSOLogoutObject sSOLogoutObject = new SSOLogoutObject();
             sSOLogoutObject.RequestLogoutUrl = ServerUrl + "Kingdee.BOS.ServiceFacade.ServicesStub.User.UserService.LogoutByOtherSystem.common.kdsvc";
@@ -446,17 +448,15 @@ namespace YiKdWebClient.SSO
 
             string appSecret = this.appSettingsModel.XKDApiAppSec;//第三方系统应用秘钥
 
-            string[] arr = new string[] { dbId, usserName, appId, appSecret, timestamp.ToString()! };
+            long timestamplogout = CommonFunctionHelper.GetTimestamp();
+
+            string[] arr = new string[] { dbId, usserName, appId, appSecret, timestamplogout.ToString() };
 
             Array.Sort(arr, StringComparer.Ordinal);
 
             string sortdata = string.Join(string.Empty, arr);
 
             string sign = CommonFunctionHelper.Sha256Hex(sortdata);//签名V4 签名算法使用自己语言的sha256算法即可
-
-            long timestamplogout = CommonFunctionHelper.GetTimestamp();
-
-
 
             var options = new JsonSerializerOptions();
             options.WriteIndented = false; // 设置false格式化为非缩进格式，即不保留换行符;
@@ -491,6 +491,7 @@ namespace YiKdWebClient.SSO
         {
             string ServerUrl = string.Empty;
             if (string.IsNullOrWhiteSpace(url)) { ServerUrl = this.url!; }
+            else { ServerUrl = CommonFunctionHelper.GetServerUrl(url); }
             if (string.IsNullOrWhiteSpace(usserName)) { usserName = this.appSettingsModel.XKDApiUserName;/*用户名称*/ }
             SSOLogoutObject sSOLogoutObject = new SSOLogoutObject();
             sSOLogoutObject.RequestLogoutUrl = ServerUrl + "Kingdee.BOS.ServiceFacade.ServicesStub.User.UserService.LogoutByOtherSystem.common.kdsvc";
@@ -500,17 +501,15 @@ namespace YiKdWebClient.SSO
 
             string appSecret = this.appSettingsModel.XKDApiAppSec;//第三方系统应用秘钥
 
-            string[] arr = new string[] { dbId, usserName, appId, appSecret, timestamp.ToString()! };
+            long timestamplogout = CommonFunctionHelper.GetTimestamp();
+
+            string[] arr = new string[] { dbId, usserName, appId, appSecret, timestamplogout.ToString() };
 
             // Array.Sort(arr, StringComparer.Ordinal);
 
             //   string sortdata = string.Join(string.Empty, arr);
 
             string sign = CommonFunctionHelper.GetSignatureSHA1Util(arr);//签名 V3
-
-            long timestamplogout = CommonFunctionHelper.GetTimestamp();
-
-
 
             var options = new JsonSerializerOptions();
             options.WriteIndented = false; // 设置false格式化为非缩进格式，即不保留换行符;
@@ -545,6 +544,7 @@ namespace YiKdWebClient.SSO
         {
             string ServerUrl = string.Empty;
             if (string.IsNullOrWhiteSpace(url)) { ServerUrl = this.url!; }
+            else { ServerUrl = CommonFunctionHelper.GetServerUrl(url); }
             if (string.IsNullOrWhiteSpace(usserName)) { usserName = this.appSettingsModel.XKDApiUserName;/*用户名称*/ }
             SSOLogoutObject sSOLogoutObject = new SSOLogoutObject();
             sSOLogoutObject.RequestLogoutUrl = ServerUrl + "Kingdee.BOS.ServiceFacade.ServicesStub.User.UserService.LogoutByOtherSystem.common.kdsvc";
@@ -554,17 +554,15 @@ namespace YiKdWebClient.SSO
 
             string appSecret = this.appSettingsModel.XKDApiAppSec;//第三方系统应用秘钥
 
-            string[] arr = new string[] { dbId, usserName, appId, appSecret, timestamp.ToString()! };
+            long timestamplogout = CommonFunctionHelper.GetTimestamp();
+
+            string[] arr = new string[] { dbId, usserName, appId, appSecret, timestamplogout.ToString() };
 
             //  Array.Sort(arr, StringComparer.Ordinal);
 
             // string sortdata = string.Join(string.Empty, arr);
 
             string sign = CommonFunctionHelper.GetSignatureSHA1Util(arr);//签名  V2
-
-            long timestamplogout = CommonFunctionHelper.GetTimestamp();
-
-
 
             var options = new JsonSerializerOptions();
             options.WriteIndented = false; // 设置false格式化为非缩进格式，即不保留换行符;

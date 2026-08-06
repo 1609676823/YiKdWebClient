@@ -104,11 +104,19 @@ namespace YiKdWebClient.CommonService
             }
             Dictionary<string, string> DicappSettings = new Dictionary<string, string>();
 
-            XmlDocument xmlDoc = YiKdWebClient.CommonService.XmlConfigHelper.GetAllCfg();
+            XmlDocument xmlDoc = YiKdWebClient.CommonService.XmlConfigHelper.GetAllCfg(path);
             //获取根节点
-            XmlNode root = xmlDoc.DocumentElement!;
+            XmlNode? root = xmlDoc.DocumentElement;
+            if (root == null)
+            {
+                return DicappSettings;
+            }
 
-            XmlNode appSettings = root.FirstChild!;
+            XmlNode? appSettings = root.SelectSingleNode("appSettings");
+            if (appSettings == null)
+            {
+                return DicappSettings;
+            }
 
 
             XmlNodeList appSettingsNodes = appSettings.ChildNodes;
