@@ -217,27 +217,61 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- <�
 
 ## 6. 认证与请求示例
 
-以下示例统一查看 `SEC_User` 表单中的 `Administrator` 用户：
+以下示例都查看 `SEC_User` 表单中的 `Administrator` 用户。为了方便初学者直接复制使用，本节**不共用任何代码变量**：每个代码块都重新声明 `formId`、`json`、`client` 和输出变量。只要项目已经引用 `YiKdWebClient`，并按第 5 节准备好配置文件，就可以把任意一个代码块单独复制到控制台项目的 `Program.cs` 中运行。
 
-```csharp
-const string formId = "SEC_User";
-const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
-```
+截图里的各项内容与客户端属性的对应关系如下；每个示例也会把这些属性先赋值给名称明确的局部变量，再输出到控制台：
+
+| 截图中的内容 | 示例变量 | 数据来源 |
+| --- | --- | --- |
+| 表单 ID | `formId` | 调用方传给 `View` 的第一个参数 |
+| 业务 JSON 参数 | `json` | 调用方传给 `View` 的第二个参数 |
+| 登录请求地址 | `loginRequestUrl` | `client.ReturnLoginWebModel.RequestUrl` |
+| 登录请求报文 | `loginRequestBody` | `client.ReturnLoginWebModel.RealRequestBody` |
+| 登录返回报文 | `loginResponseBody` | `client.ReturnLoginWebModel.RealResponseBody` |
+| 业务请求地址 | `operationRequestUrl` | `client.ReturnOperationWebModel.RequestUrl` |
+| 业务请求报文 | `operationRequestBody` | `client.ReturnOperationWebModel.RealRequestBody` |
+| 业务返回报文 | `operationResponseBody` | `client.ReturnOperationWebModel.RealResponseBody` |
+| 方法返回值 | `resultJson` | `client.View(...)` 等方法的直接返回值 |
 
 ### 6.1 签名信息认证（SHA256，推荐）
 
 支持 SHA256 的金蝶云星空版本优先使用此方式。
 
 ```csharp
+using System;
 using YiKdWebClient;
 using YiKdWebClient.Model;
 
-YiK3CloudClient client = new YiK3CloudClient
+// 1. 本次 View 接口的两个业务参数。
+const string formId = "SEC_User";
+const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
+
+// 2. 创建客户端，并指定 SHA256 签名认证。
+using YiK3CloudClient client = new YiK3CloudClient
 {
     LoginType = LoginType.LoginBySignSHA256
 };
 
+// 3. 发起请求；resultJson 就是 View 方法直接返回的 JSON。
 string resultJson = client.View(formId, json);
+
+// 4. 从客户端取出截图中的真实登录报文和业务报文。
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"表单 ID（formId）：{formId}");
+Console.WriteLine($"业务 JSON 参数（json）：{json}");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（loginRequestBody）：{loginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"业务请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"业务请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"业务返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"View 方法返回值（resultJson）：{resultJson}");
 ```
 
 运行：
@@ -253,12 +287,37 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- sig
 PT-146911 `8.0.0.202205` 之前的版本不支持 SHA256 时，可改用 SHA1。
 
 ```csharp
-YiK3CloudClient client = new YiK3CloudClient
+using System;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+
+// 本代码块是独立示例，不依赖 6.1 中的变量。
+const string formId = "SEC_User";
+const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
+
+using YiK3CloudClient client = new YiK3CloudClient
 {
     LoginType = LoginType.LoginBySignSHA1
 };
 
 string resultJson = client.View(formId, json);
+
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"表单 ID（formId）：{formId}");
+Console.WriteLine($"业务 JSON 参数（json）：{json}");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（loginRequestBody）：{loginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"业务请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"业务请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"业务返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"View 方法返回值（resultJson）：{resultJson}");
 ```
 
 运行：
@@ -274,12 +333,48 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- sig
 该方式读取 `appsettings.xml` 中的数据中心 ID、集成用户、应用 ID 和应用密钥。
 
 ```csharp
-YiK3CloudClient client = new YiK3CloudClient
+using System;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+
+const string formId = "SEC_User";
+const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
+
+// AppSettingsModel 默认从输出目录的 YiKdWebCfg/appsettings.xml 读取配置。
+using YiK3CloudClient client = new YiK3CloudClient
 {
     LoginType = LoginType.LoginByAppSecret
 };
 
 string resultJson = client.View(formId, json);
+
+// 这些变量说明本次认证配置来自哪里；应用密钥不输出明文。
+string dataCenterId = client.AppSettingsModel.XKDApiAcctID;
+string integrationUser = client.AppSettingsModel.XKDApiUserName;
+string appId = client.AppSettingsModel.XKDApiAppID;
+string serverUrl = client.AppSettingsModel.XKDApiServerUrl;
+
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"配置文件中的数据中心 ID（dataCenterId）：{dataCenterId}");
+Console.WriteLine($"配置文件中的集成用户（integrationUser）：{integrationUser}");
+Console.WriteLine($"配置文件中的应用 ID（appId）：{appId}");
+Console.WriteLine("配置文件中的应用密钥：******");
+Console.WriteLine($"配置文件中的服务地址（serverUrl）：{serverUrl}");
+Console.WriteLine($"表单 ID（formId）：{formId}");
+Console.WriteLine($"业务 JSON 参数（json）：{json}");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（loginRequestBody）：{loginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"业务请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"业务请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"业务返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"View 方法返回值（resultJson）：{resultJson}");
 ```
 
 运行：
@@ -295,34 +390,67 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- app
 旧版认证不依赖 `appsettings.xml` 中的应用 ID 和应用密钥，但需要服务地址、数据中心 ID、用户名、密码和语系。除兼容旧系统外，不建议新项目优先使用用户名密码方式。
 
 ```csharp
-string password = Environment.GetEnvironmentVariable("YIKD_VALIDATE_PASSWORD")
-    ?? throw new InvalidOperationException("请先设置 YIKD_VALIDATE_PASSWORD。");
+using System;
+using YiKdWebClient;
+using YiKdWebClient.Model;
 
-YiK3CloudClient client = new YiK3CloudClient
+const string formId = "SEC_User";
+const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
+
+string serverUrl = "http://127.0.0.1/K3Cloud/";
+string dataCenterId = "6979b9812f3f89";
+string userName = "demo";
+string password = "123456"; // 示例密码，请替换为目标环境用户的实际密码
+int localeId = 2052;
+
+using YiK3CloudClient client = new YiK3CloudClient
 {
     LoginType = LoginType.ValidateLogin,
     validateLoginSettingsModel = new ValidateLoginSettingsModel
     {
-        Url = "http://127.0.0.1/K3Cloud/",
-        DbId = "6979b9812f3f89",
-        UserName = "demo",
+        Url = serverUrl,
+        DbId = dataCenterId,
+        UserName = userName,
         Password = password,
-        lcid = 2052
+        lcid = localeId
     }
 };
 
 string resultJson = client.View(formId, json);
+
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+// 登录请求体中含有密码，输出前替换为星号；真实请求不受影响。
+string maskedLoginRequestBody = loginRequestBody.Replace(password, "******");
+
+Console.WriteLine($"服务地址（serverUrl）：{serverUrl}");
+Console.WriteLine($"数据中心 ID（dataCenterId）：{dataCenterId}");
+Console.WriteLine($"用户名（userName）：{userName}");
+Console.WriteLine("密码（password）：******");
+Console.WriteLine($"语系（localeId）：{localeId}");
+Console.WriteLine($"表单 ID（formId）：{formId}");
+Console.WriteLine($"业务 JSON 参数（json）：{json}");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（maskedLoginRequestBody）：{maskedLoginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"业务请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"业务请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"业务返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"View 方法返回值（resultJson）：{resultJson}");
 ```
 
-PowerShell 运行方式：
+把代码复制到控制台项目的 `Program.cs` 后直接运行即可，不需要设置环境变量：
 
 ```powershell
-$env:YIKD_VALIDATE_PASSWORD = '<替换为你的测试密码>'
-dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- validate-login
-Remove-Item Env:\YIKD_VALIDATE_PASSWORD
+dotnet run
 ```
 
-截图中登录请求确实使用了本次运行密码，但展示前已把密码替换为 `******`。
+`123456` 仅用于说明密码变量应填写在哪里，接入时必须替换成目标环境中 `userName` 对应用户的真实密码。截图中的登录请求使用了本地测试密码，但展示前已替换为 `******`。
 
 ![旧版用户名密码认证的实际请求与响应，密码已脱敏](docs/screenshots/04-validate-login.png)
 
@@ -331,22 +459,50 @@ Remove-Item Env:\YIKD_VALIDATE_PASSWORD
 将目标环境生成的 `.cnf` 集成密钥文件放到 `YiKdWebCfg`，并确保它会复制到输出目录。
 
 ```csharp
+using System;
+using System.IO;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+
+const string formId = "SEC_User";
+const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
+
 string cnfFilePath = Path.Combine(
     AppContext.BaseDirectory,
     "YiKdWebCfg",
     "API测试.cnf");
+string serverUrl = "http://127.0.0.1/K3Cloud/";
 
-YiK3CloudClient client = new YiK3CloudClient
+using YiK3CloudClient client = new YiK3CloudClient
 {
     LoginType = LoginType.LoginBySimplePassport,
     LoginBySimplePassportModel = new LoginBySimplePassportModel
     {
-        Url = "http://127.0.0.1/K3Cloud/",
+        Url = serverUrl,
         CnfFilePath = cnfFilePath
     }
 };
 
 string resultJson = client.View(formId, json);
+
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"服务地址（serverUrl）：{serverUrl}");
+Console.WriteLine($"集成密钥文件路径（cnfFilePath）：{cnfFilePath}");
+Console.WriteLine($"表单 ID（formId）：{formId}");
+Console.WriteLine($"业务 JSON 参数（json）：{json}");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（loginRequestBody）：{loginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"业务请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"业务请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"业务返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"View 方法返回值（resultJson）：{resultJson}");
 ```
 
 运行：
@@ -362,18 +518,33 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- sim
 API 请求头签名模式不会先调用登录验证接口，而是直接给业务请求生成签名请求头，因此可以减少一次 Web 请求。原文档同时提醒：官方已经删除过该方式对应的帖子和算法说明，生产使用前应确认目标版本仍然支持。
 
 ```csharp
-YiK3CloudClient client = new YiK3CloudClient
+using System;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+
+const string formId = "SEC_User";
+const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
+
+using YiK3CloudClient client = new YiK3CloudClient
 {
     LoginType = LoginType.LoginByApiSignHeaders
 };
 
 string resultJson = client.View(formId, json);
 
-// 可直接复制到 Postman、ApiPost 的请求头文本
-Console.WriteLine(client.RequestHeadersString);
-Console.WriteLine(client.ReturnOperationWebModel.RequestUrl);
-Console.WriteLine(client.ReturnOperationWebModel.RealRequestBody);
-Console.WriteLine(client.ReturnOperationWebModel.RealResponseBody);
+// 该模式没有单独的登录请求，认证信息位于业务请求头中。
+string requestHeaders = client.RequestHeadersString;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"表单 ID（formId）：{formId}");
+Console.WriteLine($"业务 JSON 参数（json）：{json}");
+Console.WriteLine($"可复制到 Postman/ApiPost 的请求头（requestHeaders）：{requestHeaders}");
+Console.WriteLine($"业务请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"业务请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"业务返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"View 方法返回值（resultJson）：{resultJson}");
 ```
 
 运行：
@@ -393,24 +564,64 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- api
 3. 配置来自数据库、配置中心或环境变量，而不是固定 XML 文件。
 
 ```csharp
+using System;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+
+const string formId = "SEC_User";
+const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
+
+// 这些值可以来自数据库、配置中心或环境变量；请替换为自己的环境信息。
+string dataCenterId = "替换为数据中心 ID";
+string integrationUser = "替换为集成用户";
+string appId = "替换为应用 ID";
+string appSecret = "替换为应用密钥";
+string localeId = "2052";
+string organizationNumber = ""; // 可为空
+string serverUrl = "http://127.0.0.1/K3Cloud/";
+
 AppSettingsModel settings = new AppSettingsModel
 {
-    XKDApiAcctID = "数据中心 ID",
-    XKDApiUserName = "集成用户",
-    XKDApiAppID = "应用 ID",
-    XKDApiAppSec = "应用密钥",
-    XKDApiLCID = "2052",
-    XKDApiOrgNum = "组织编码，可为空",
-    XKDApiServerUrl = "http://127.0.0.1/K3Cloud/"
+    XKDApiAcctID = dataCenterId,
+    XKDApiUserName = integrationUser,
+    XKDApiAppID = appId,
+    XKDApiAppSec = appSecret,
+    XKDApiLCID = localeId,
+    XKDApiOrgNum = organizationNumber,
+    XKDApiServerUrl = serverUrl
 };
 
-YiK3CloudClient client = new YiK3CloudClient
+using YiK3CloudClient client = new YiK3CloudClient
 {
     AppSettingsModel = settings,
     LoginType = LoginType.LoginByAppSecret
 };
 
 string resultJson = client.View(formId, json);
+
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"代码传入的数据中心 ID（dataCenterId）：{dataCenterId}");
+Console.WriteLine($"代码传入的集成用户（integrationUser）：{integrationUser}");
+Console.WriteLine($"代码传入的应用 ID（appId）：{appId}");
+Console.WriteLine("代码传入的应用密钥（appSecret）：******");
+Console.WriteLine($"代码传入的语系（localeId）：{localeId}");
+Console.WriteLine($"代码传入的组织编码（organizationNumber）：{organizationNumber}");
+Console.WriteLine($"代码传入的服务地址（serverUrl）：{serverUrl}");
+Console.WriteLine($"表单 ID（formId）：{formId}");
+Console.WriteLine($"业务 JSON 参数（json）：{json}");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（loginRequestBody）：{loginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"业务请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"业务请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"业务返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"View 方法返回值（resultJson）：{resultJson}");
 ```
 
 运行：
@@ -426,16 +637,43 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- dyn
 必须在创建 `YiK3CloudClient` 之前设置路径。
 
 ```csharp
+using System;
+using YiKdWebClient;
 using YiKdWebClient.CommonService;
+using YiKdWebClient.Model;
 
-XmlConfigHelper.AppConfigPath = @"D:\configs\kingdee\appsettings.xml";
+const string formId = "SEC_User";
+const string json = "{\"IsUserModelInit\":\"true\",\"Number\":\"Administrator\",\"IsSortBySeq\":\"false\"}";
 
-YiK3CloudClient client = new YiK3CloudClient
+string configFilePath = @"D:\configs\kingdee\appsettings.xml";
+
+// 必须先设置配置文件路径，再创建客户端。
+XmlConfigHelper.AppConfigPath = configFilePath;
+
+using YiK3CloudClient client = new YiK3CloudClient
 {
     LoginType = LoginType.LoginBySignSHA256
 };
 
 string resultJson = client.View(formId, json);
+
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"本次配置文件路径（configFilePath）：{configFilePath}");
+Console.WriteLine($"表单 ID（formId）：{formId}");
+Console.WriteLine($"业务 JSON 参数（json）：{json}");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（loginRequestBody）：{loginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"业务请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"业务请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"业务返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"View 方法返回值（resultJson）：{resultJson}");
 ```
 
 示例运行器默认通过 `YIKD_CONFIG_PATH` 指定路径：
@@ -449,23 +687,12 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- cus
 
 ### 6.9 如何查看真实请求和响应
 
-所有认证方式都可以使用同一组属性排查问题：
+前面每个完整示例都已经演示了真实报文属性，不需要再从本小节复制一段公共代码。理解下面三个对象的职责，就能判断应该读取哪个变量：
 
-```csharp
-Console.WriteLine("真实的登录地址：");
-Console.WriteLine(client.ReturnLoginWebModel.RequestUrl);
-Console.WriteLine("真实的登录请求报文：");
-Console.WriteLine(client.ReturnLoginWebModel.RealRequestBody);
-Console.WriteLine("真实的登录返回报文：");
-Console.WriteLine(client.ReturnLoginWebModel.RealResponseBody);
-
-Console.WriteLine("真实的业务请求地址：");
-Console.WriteLine(client.ReturnOperationWebModel.RequestUrl);
-Console.WriteLine("真实的业务请求报文：");
-Console.WriteLine(client.ReturnOperationWebModel.RealRequestBody);
-Console.WriteLine("真实的业务返回报文：");
-Console.WriteLine(client.ReturnOperationWebModel.RealResponseBody);
-```
+- `resultJson` 是当前方法的直接返回值，适合业务代码继续反序列化和判断成功状态；
+- `client.ReturnLoginWebModel` 保存本次自动登录的 URL、请求体和响应体；
+- `client.ReturnOperationWebModel` 保存本次业务操作的 URL、请求体和响应体；
+- `client.RequestHeadersString` 仅在 API 请求头签名模式下用于查看可复制的签名请求头。
 
 复制 URL、请求头和请求体到 Postman/ApiPost 时，要注意时间戳、随机数、签名和会话信息可能很快失效。调试完成后也不要把包含密码、密钥、Cookie 或 SessionId 的导出文件提交到仓库。
 
@@ -474,9 +701,23 @@ Console.WriteLine(client.ReturnOperationWebModel.RealResponseBody);
 传给 YiKdWebClient 方法的 JSON 与金蝶官方文档要求的参数格式一致。客户端会负责外层 HTTP 报文包装。例如：
 
 ```csharp
+using System;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+
+// formId 决定调用哪个业务对象；json 是该接口要求的业务参数。
 string formId = "SEC_User";
 string json = @"{""IsUserModelInit"":""true"",""Number"":""Administrator"",""IsSortBySeq"":""false""}";
+
+using YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginBySignSHA256
+};
+
 string resultJson = client.View(formId, json);
+
+// resultJson 是可以直接反序列化的 View 方法返回值。
+Console.WriteLine($"View 方法返回值（resultJson）：{resultJson}");
 ```
 
 已封装的主要接口如下。功能名称尽量与金蝶官方名称保持一致：
@@ -515,28 +756,43 @@ string resultJson = client.View(formId, json);
 项目支持 SSO V1、V2、V3 和 V4。下面以 V4 为例。它会在本地生成签名参数和入口 URL，不发送 HTTP 请求，因此没有“返回报文”。
 
 ```csharp
+using System;
 using YiKdWebClient.SSO;
 
+// 本代码块可以独立运行。userName 是要免密登录的金蝶用户名。
+string userName = "Administrator";
 SSOHelper helper = new SSOHelper();
 
-// 指定用户；不传时通常使用配置文件中的集成用户
-helper.GetSsoUrlsV4("Administrator");
+// 未单独传 URL 时，服务地址及认证信息来自 YiKdWebCfg/appsettings.xml。
+helper.GetSsoUrlsV4(userName);
 
-Console.WriteLine(helper.simplePassportLoginArg.dbid);
-Console.WriteLine(helper.simplePassportLoginArg.appid);
-Console.WriteLine(helper.simplePassportLoginArg.username);
-Console.WriteLine(helper.timestamp);
-Console.WriteLine(helper.simplePassportLoginArg.signeddata);
-Console.WriteLine(helper.argJosn);
-Console.WriteLine(helper.argJsonBase64);
-Console.WriteLine(helper.SSOLoginUrlObject.silverlightUrl);
-Console.WriteLine(helper.SSOLoginUrlObject.html5Url);
-Console.WriteLine(helper.SSOLoginUrlObject.wpfUrl);
+// 把截图中的每一项先赋给名称明确的变量，便于复制后继续使用。
+string? dataCenterId = helper.simplePassportLoginArg.dbid;
+string? appId = helper.simplePassportLoginArg.appid;
+string? loginUserName = helper.simplePassportLoginArg.username;
+long? timestamp = helper.timestamp;
+string? signedData = helper.simplePassportLoginArg.signeddata;
+string? argumentJson = helper.argJosn;
+string? argumentBase64 = helper.argJsonBase64;
+string silverlightUrl = helper.SSOLoginUrlObject.silverlightUrl;
+string html5Url = helper.SSOLoginUrlObject.html5Url;
+string wpfUrl = helper.SSOLoginUrlObject.wpfUrl;
+
+Console.WriteLine($"数据中心 ID（dataCenterId）：{dataCenterId}");
+Console.WriteLine($"应用 ID（appId）：{appId}");
+Console.WriteLine($"登录用户名（loginUserName）：{loginUserName}");
+Console.WriteLine($"时间戳（timestamp）：{timestamp}");
+Console.WriteLine($"签名（signedData）：{signedData}");
+Console.WriteLine($"原始 SSO 参数 JSON（argumentJson）：{argumentJson}");
+Console.WriteLine($"Base64 参数（argumentBase64）：{argumentBase64}");
+Console.WriteLine($"Silverlight 入口（silverlightUrl）：{silverlightUrl}");
+Console.WriteLine($"HTML5 入口（html5Url）：{html5Url}");
+Console.WriteLine($"WPF 入口（wpfUrl）：{wpfUrl}");
 
 // 旧版本按目标环境需要选择：
-// helper.GetSsoUrlsV3("Administrator");
-// helper.GetSsoUrlsV2("Administrator");
-// helper.GetSsoUrlsV1("Administrator");
+// helper.GetSsoUrlsV3(userName);
+// helper.GetSsoUrlsV2(userName);
+// helper.GetSsoUrlsV1(userName);
 ```
 
 运行：
@@ -580,21 +836,56 @@ dotnet build .\GlobalServiceCustom.WebApi\GlobalServiceCustom.WebApi.csproj -c R
 服务定位对象中的命名空间、类名和方法名必须与服务器端部署内容完全一致：
 
 ```csharp
-YiK3CloudClient client = new YiK3CloudClient
+using System;
+using System.Text.Json;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+
+using YiK3CloudClient client = new YiK3CloudClient
 {
     LoginType = LoginType.LoginByAppSecret
 };
 
-string jsonString = @"{ ""parameters"": [ ""SELECT TOP 10 * FROM T_BD_MATERIAL_L"" ] }";
+// sql 是传给服务端 CommonRunnerService 方法的实际参数。
+string sql = "SELECT TOP 10 * FROM T_BD_MATERIAL_L";
+string jsonString = JsonSerializer.Serialize(new
+{
+    parameters = new[] { sql }
+});
+
+// 三个定位值分别来自服务端项目的命名空间、类名和公开方法名。
+string projectNamespace = "GlobalServiceCustom.WebApi";
+string projectClassName = "DataServiceHandler";
+string projectMethodName = "CommonRunnerService";
 
 CustomServicesStubpath service = new CustomServicesStubpath
 {
-    ProjetNamespace = "GlobalServiceCustom.WebApi",
-    ProjetClassName = "DataServiceHandler",
-    ProjetClassMethod = "CommonRunnerService"
+    ProjetNamespace = projectNamespace,
+    ProjetClassName = projectClassName,
+    ProjetClassMethod = projectMethodName
 };
 
 string resultJson = client.CustomBusinessServiceByParameters(jsonString, service);
+
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"服务端命名空间（projectNamespace）：{projectNamespace}");
+Console.WriteLine($"服务端类名（projectClassName）：{projectClassName}");
+Console.WriteLine($"服务端方法名（projectMethodName）：{projectMethodName}");
+Console.WriteLine($"SQL 参数（sql）：{sql}");
+Console.WriteLine($"接口参数 JSON（jsonString）：{jsonString}");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（loginRequestBody）：{loginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"业务请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"业务请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"业务返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"自定义接口返回值（resultJson）：{resultJson}");
 ```
 
 原有服务调用结构截图保留在统一截图目录中：
@@ -620,28 +911,67 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- cus
 ### 10.1 文件路径分块上传，直接返回最终结果
 
 ```csharp
-YiK3CloudClient client = new YiK3CloudClient
+using System;
+using System.IO;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+using YiKdWebClient.ToolsHelper;
+
+// 本代码块包含全部输入，不依赖其他上传示例。
+string serverUrl = "http://127.0.0.1/K3Cloud/";
+string cnfFilePath = Path.Combine(AppContext.BaseDirectory, "YiKdWebCfg", "API测试.cnf");
+string filePath = Path.Combine(AppContext.BaseDirectory, "SampleFiles", "upload-demo.txt");
+string formId = "SAL_SaleOrder";
+string interId = "100020";
+string billNumber = "XSDD000019";
+long chunkSize = 2L * 1024 * 1024;
+
+if (!File.Exists(filePath))
+{
+    throw new FileNotFoundException("找不到待上传文件，请修改 filePath。", filePath);
+}
+
+using YiK3CloudClient client = new YiK3CloudClient
 {
     LoginType = LoginType.LoginBySimplePassport,
     LoginBySimplePassportModel = new LoginBySimplePassportModel
     {
-        Url = "http://127.0.0.1/K3Cloud/",
-        CnfFilePath = Path.Combine(AppContext.BaseDirectory, "YiKdWebCfg", "API测试.cnf")
+        Url = serverUrl,
+        CnfFilePath = cnfFilePath
     }
 };
 
 UploadModel uploadModel = new UploadModel();
-uploadModel.data.FormId = "SAL_SaleOrder";
-uploadModel.data.InterId = "100020";
-uploadModel.data.BillNO = "XSDD000019";
+uploadModel.data.FormId = formId;
+uploadModel.data.InterId = interId;
+uploadModel.data.BillNO = billNumber;
 
 string resultJson = AttachmentHelper.AttachmentUploadByFilePath(
-    @"D:\files\test.pdf",
+    filePath,
     client,
     uploadModel,
-    2 * 1024 * 1024);
+    chunkSize);
 
-Console.WriteLine(resultJson);
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"待上传文件（filePath）：{filePath}");
+Console.WriteLine($"文件大小：{new FileInfo(filePath).Length} 字节");
+Console.WriteLine($"目标表单（formId）：{formId}");
+Console.WriteLine($"单据内码（interId）：{interId}");
+Console.WriteLine($"单据编号（billNumber）：{billNumber}");
+Console.WriteLine($"分块大小（chunkSize）：{chunkSize} 字节");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（loginRequestBody）：{loginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"最后一块请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"最后一块请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"最后一块返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"上传方法返回值（resultJson）：{resultJson}");
 ```
 
 运行：
@@ -655,24 +985,74 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- upl
 ### 10.2 文件路径分块上传，获取完整进度
 
 ```csharp
+using System;
+using System.IO;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+using YiKdWebClient.ToolsHelper;
+
+// 10.2 是完整独立示例，因此重新声明客户端、文件参数和上传模型。
+string serverUrl = "http://127.0.0.1/K3Cloud/";
+string cnfFilePath = Path.Combine(AppContext.BaseDirectory, "YiKdWebCfg", "API测试.cnf");
+string filePath = Path.Combine(AppContext.BaseDirectory, "SampleFiles", "upload-demo.txt");
+string formId = "SAL_SaleOrder";
+string interId = "100020";
+string billNumber = "XSDD000019";
+long chunkSize = 2L * 1024 * 1024;
+
+if (!File.Exists(filePath))
+{
+    throw new FileNotFoundException("找不到待上传文件，请修改 filePath。", filePath);
+}
+
+using YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginBySimplePassport,
+    LoginBySimplePassportModel = new LoginBySimplePassportModel
+    {
+        Url = serverUrl,
+        CnfFilePath = cnfFilePath
+    }
+};
+
+UploadModel uploadModel = new UploadModel();
+uploadModel.data.FormId = formId;
+uploadModel.data.InterId = interId;
+uploadModel.data.BillNO = billNumber;
+
 Action<FileChunk, YiK3CloudClient> progress = (chunk, currentClient) =>
 {
-    Console.WriteLine($"正在处理第 {chunk.Chunkindex + 1} 个分块");
-    Console.WriteLine(currentClient.ReturnOperationWebModel.RealRequestBody);
-    Console.WriteLine(currentClient.ReturnOperationWebModel.RealResponseBody);
+    long chunkNumber = chunk.Chunkindex + 1;
+    bool isLastChunk = chunk.IsLast;
+    string chunkRequestUrl = currentClient.ReturnOperationWebModel.RequestUrl;
+    string chunkRequestBody = currentClient.ReturnOperationWebModel.RealRequestBody;
+    string chunkResponseBody = currentClient.ReturnOperationWebModel.RealResponseBody;
 
-    if (chunk.IsLast)
+    Console.WriteLine($"当前分块序号（chunkNumber）：{chunkNumber}");
+    Console.WriteLine($"是否最后一块（isLastChunk）：{isLastChunk}");
+    Console.WriteLine($"当前分块请求地址（chunkRequestUrl）：{chunkRequestUrl}");
+    Console.WriteLine($"当前分块请求报文（chunkRequestBody）：{chunkRequestBody}");
+    Console.WriteLine($"当前分块返回报文（chunkResponseBody）：{chunkResponseBody}");
+
+    if (isLastChunk)
     {
         Console.WriteLine("所有分块处理结束");
     }
 };
 
 string resultJson = AttachmentHelper.AttachmentUploadByFilePath(
-    @"D:\files\test.pdf",
+    filePath,
     client,
     uploadModel,
-    2 * 1024 * 1024,
+    chunkSize,
     progress);
+
+Console.WriteLine($"待上传文件（filePath）：{filePath}");
+Console.WriteLine($"目标表单（formId）：{formId}");
+Console.WriteLine($"单据内码（interId）：{interId}");
+Console.WriteLine($"单据编号（billNumber）：{billNumber}");
+Console.WriteLine($"分块大小（chunkSize）：{chunkSize} 字节");
+Console.WriteLine($"上传方法最终返回值（resultJson）：{resultJson}");
 ```
 
 运行：
@@ -688,15 +1068,70 @@ dotnet run --project .\ConsoleTestNet80\ConsoleTestNet80.csproj -f net8.0 -- upl
 把文件内容转换为 Base64 后，调用 `AttachmentUploadByBase64`：
 
 ```csharp
-string filePath = @"D:\files\test.pdf";
+using System;
+using System.IO;
+using YiKdWebClient;
+using YiKdWebClient.Model;
+using YiKdWebClient.ToolsHelper;
+
+// 10.3 同样包含全部变量，可单独复制运行。
+string serverUrl = "http://127.0.0.1/K3Cloud/";
+string cnfFilePath = Path.Combine(AppContext.BaseDirectory, "YiKdWebCfg", "API测试.cnf");
+string filePath = Path.Combine(AppContext.BaseDirectory, "SampleFiles", "upload-demo.txt");
+string formId = "SAL_SaleOrder";
+string interId = "100020";
+string billNumber = "XSDD000019";
+long chunkSize = 2L * 1024 * 1024;
+
+if (!File.Exists(filePath))
+{
+    throw new FileNotFoundException("找不到待上传文件，请修改 filePath。", filePath);
+}
+
 string base64 = Convert.ToBase64String(File.ReadAllBytes(filePath));
+
+using YiK3CloudClient client = new YiK3CloudClient
+{
+    LoginType = LoginType.LoginBySimplePassport,
+    LoginBySimplePassportModel = new LoginBySimplePassportModel
+    {
+        Url = serverUrl,
+        CnfFilePath = cnfFilePath
+    }
+};
+
+UploadModel uploadModel = new UploadModel();
+uploadModel.data.FormId = formId;
+uploadModel.data.InterId = interId;
+uploadModel.data.BillNO = billNumber;
 
 string resultJson = AttachmentHelper.AttachmentUploadByBase64(
     base64,
     Path.GetFileName(filePath),
     client,
     uploadModel,
-    2 * 1024 * 1024);
+    chunkSize);
+
+string loginRequestUrl = client.ReturnLoginWebModel.RequestUrl;
+string loginRequestBody = client.ReturnLoginWebModel.RealRequestBody;
+string loginResponseBody = client.ReturnLoginWebModel.RealResponseBody;
+string operationRequestUrl = client.ReturnOperationWebModel.RequestUrl;
+string operationRequestBody = client.ReturnOperationWebModel.RealRequestBody;
+string operationResponseBody = client.ReturnOperationWebModel.RealResponseBody;
+
+Console.WriteLine($"源文件（filePath）：{filePath}");
+Console.WriteLine($"Base64 字符数（base64.Length）：{base64.Length}");
+Console.WriteLine($"目标表单（formId）：{formId}");
+Console.WriteLine($"单据内码（interId）：{interId}");
+Console.WriteLine($"单据编号（billNumber）：{billNumber}");
+Console.WriteLine($"分块大小（chunkSize）：{chunkSize} 字节");
+Console.WriteLine($"登录请求地址（loginRequestUrl）：{loginRequestUrl}");
+Console.WriteLine($"登录请求报文（loginRequestBody）：{loginRequestBody}");
+Console.WriteLine($"登录返回报文（loginResponseBody）：{loginResponseBody}");
+Console.WriteLine($"最后一块请求地址（operationRequestUrl）：{operationRequestUrl}");
+Console.WriteLine($"最后一块请求报文（operationRequestBody）：{operationRequestBody}");
+Console.WriteLine($"最后一块返回报文（operationResponseBody）：{operationResponseBody}");
+Console.WriteLine($"上传方法返回值（resultJson）：{resultJson}");
 ```
 
 运行：
