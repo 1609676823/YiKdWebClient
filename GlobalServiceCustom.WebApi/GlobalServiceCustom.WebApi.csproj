@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E4C7900B-9995-4583-A99A-ECD4059A8F53}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GlobalServiceCustom.WebApi</RootNamespace>
+    <AssemblyName>GlobalServiceCustom.WebApi</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <!-- 类库直接引用 kdbin 中的 DLL，不生成或依赖 app.config/bindingRedirect。 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      这些程序集来自目标金蝶云星空版本，直接从项目内 kdbin 引用。
+      Private=False 可防止构建插件时把服务器运行时 DLL 复制到输出目录，
+      部署时只需复制 GlobalServiceCustom.WebApi.dll（以及调试时可选的 PDB）。
+    -->
+    <Reference Include="Kingdee.BOS">
+      <HintPath>kdbin\Kingdee.BOS.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Kingdee.BOS.ServiceFacade.KDServiceFx">
+      <HintPath>kdbin\Kingdee.BOS.ServiceFacade.KDServiceFx.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Kingdee.BOS.ServiceHelper">
+      <HintPath>kdbin\Kingdee.BOS.ServiceHelper.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Kingdee.BOS.WebApi.ServicesStub">
+      <HintPath>kdbin\Kingdee.BOS.WebApi.ServicesStub.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>kdbin\Newtonsoft.Json.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="DataServiceHandler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="kdbin\Kingdee.BOS.dll" />
+    <Content Include="kdbin\Kingdee.BOS.ServiceFacade.KDServiceFx.dll" />
+    <Content Include="kdbin\Kingdee.BOS.ServiceHelper.dll" />
+    <Content Include="kdbin\Kingdee.BOS.WebApi.ServicesStub.dll" />
+    <Content Include="kdbin\Newtonsoft.Json.dll" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
